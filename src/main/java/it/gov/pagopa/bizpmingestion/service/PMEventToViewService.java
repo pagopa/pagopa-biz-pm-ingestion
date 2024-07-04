@@ -25,5 +25,5 @@ public interface PMEventToViewService {
 	 * @return a {@link PMEventToViewResult} that hold the biz-event views
 	 * @throws AppException
 	 */
-	PMEventToViewResult mapBizEventToView(Logger logger, PMEvent bizEvent) throws AppException;
+	PMEventToViewResult mapPMEventToView(Logger logger, PMEvent bizEvent) throws AppException;
 }

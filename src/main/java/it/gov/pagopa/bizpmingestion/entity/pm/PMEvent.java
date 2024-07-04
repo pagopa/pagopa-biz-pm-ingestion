@@ -17,7 +17,7 @@ import lombok.Setter;
 public class PMEvent {
 	@Id
 	private String id;
-	private String fiscalCode;
+	private String fiscalCode; //pu.FISCAL_CODE
 	private String vposCircuitCode;
 	private String cardNumber;
 	private String surname;
@@ -37,10 +37,11 @@ public class PMEvent {
 	private String enteBenificiario;
 	private String idDomino;
 	private String origin;
-	private String debtorFiscalCode;
+	private String debtorFiscalCode; //pp.FISCAL_CODE
 	private String codicePagatore;
 	private String nomePagatore;
 	private String idCarrello;
 	private String idPayment;
 	private String notificationEmail;
+	private String emailPP;
 }
