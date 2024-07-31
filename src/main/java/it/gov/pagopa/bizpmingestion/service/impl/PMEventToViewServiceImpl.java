@@ -80,6 +80,7 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     }
 
     UserDetail getDebtor(PMEvent pmEvent) {
+    	/*
         if (StringUtils.hasLength(pmEvent.getNomePagatore()) && StringUtils.hasLength(pmEvent.getCodicePagatore()) && isValidFiscalCode(pmEvent.getCodicePagatore())) {
             return UserDetail.builder()
                     .name(pmEvent.getNomePagatore())
@@ -88,6 +89,8 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
         }
         throw new AppException(AppError.BAD_REQUEST, 
         		"Missing or invalid debtor info [name="+pmEvent.getNomePagatore()+", taxCode="+pmEvent.getCodicePagatore()+"]");
+        		*/
+    	return null;
     }
     
     UserDetail getPayer(PMEvent pmEvent) {
@@ -98,13 +101,14 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
         	userDetail.setName(fullName);
         }
         
-        if (StringUtils.hasLength(pmEvent.getFiscalCode()) && isValidFiscalCode(pmEvent.getFiscalCode())) {
-        	userDetail.setTaxCode(pmEvent.getFiscalCode());
+        if (StringUtils.hasLength(pmEvent.getUserFiscalCode()) && isValidFiscalCode(pmEvent.getUserFiscalCode())) {
+        	userDetail.setTaxCode(pmEvent.getUserFiscalCode());
         }
         return userDetail;
     }
 
     UserDetail getPayee(PMEvent pmEvent) {
+    	/*
         if (StringUtils.hasLength(pmEvent.getIdDomino())) {
             return UserDetail.builder()
                     .name(pmEvent.getReceiver())
@@ -112,7 +116,8 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
                     .build();
         }
         throw new AppException(AppError.BAD_REQUEST, 
-        		"Missing or invalid payee info [name="+pmEvent.getReceiver()+", taxCode="+pmEvent.getIdDomino()+"]");
+        		"Missing or invalid payee info [name="+pmEvent.getReceiver()+", taxCode="+pmEvent.getIdDomino()+"]");*/
+    	return null;
     }
 
 
@@ -122,15 +127,15 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     	LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate() , f) ;
     	
         return BizEventsViewCart.builder()
-        		.id(pmEvent.getId())
+        		.id(pmEvent.getPkTransactionId().toString())
                 .transactionId("PM-"+value+"-"+ldt.getYear())
-                .eventId(pmEvent.getId())
+                .eventId(pmEvent.getPkTransactionId().toString())
                 .subject(pmEvent.getSubject())
-                .amount(pmEvent.getGrandTotal())
+                .amount(pmEvent.getGrandTotal().toString())
                 .debtor(user)
                 .payee(getPayee(pmEvent))
                 .refNumberType(REF_TYPE_IUV)
-                .refNumberValue(pmEvent.getIuv())
+                //.refNumberValue(pmEvent.getIuv())
                 .build();
     }
 
@@ -140,7 +145,7 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     	LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate() , f) ;
     	
         return BizEventsViewGeneral.builder()
-        		.id(pmEvent.getId())
+        		.id(pmEvent.getPkTransactionId().toString())
                 .transactionId("PM-"+value+"-"+ldt.getYear())
                 .authCode(pmEvent.getNumAut())
                 .rrn(pmEvent.getRrn())
@@ -153,7 +158,7 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
                                 .maskedEmail(pmEvent.getEmailPP())
                                 .build())
                 .payer(payer)
-                .fee(pmEvent.getFee())
+                //.fee(pmEvent.getFee())
                 .paymentMethod(paymentMethodType)
                 .origin(OriginType.PM)
                 // TODO: capire come gestire la casistica del carrello (default = no carrello)
@@ -168,7 +173,7 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     	LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate() , f) ;
     	
         return BizEventsViewUser.builder()
-        		.id(pmEvent.getId())
+        		.id(pmEvent.getPkTransactionId().toString())
                 .taxCode(userDetail.getTaxCode())
                 .transactionId("PM-"+value+"-"+ldt.getYear()+(isPayer?"-p":"-d"))
                 .transactionDate(pmEvent.getCreationDate())

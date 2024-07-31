@@ -1,6 +1,5 @@
 package it.gov.pagopa.bizpmingestion.entity.pm;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,40 +10,45 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@Table(name = "PP_USER")
+@Table(name = "PP_PAYMENT")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class PPUser {
+public class PPPayment {
 	@Id
-    @Column(name = "ID_USER", nullable = false)
+    @Column(name = "ID", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	@Column(name = "ID_PAYMENT", nullable = false)
+	private String idPayment;
+	
+	@Column(name = "ID_CARRELLO")
+	private String idCarrello;
+	
 	@Column(name = "FISCAL_CODE")
-	private String fiscalCode;
-	@Column(name = "SURNAME")
-	private String surname;
-	@Column(name = "NAME")
-	private String name;
-	@Column(name = "NOTIFICATION_EMAIL", nullable = false)
-	private String notificationEmail;
+	private String fiscalCode; // CF debitore
+	@Column(name = "RECEIVER")
+	private String receiver; // ente creditore
+	@Column(name = "SUBJECT")
+	private String subject; // oggetto pagamento
+	@Column(name = "ORIGIN")
+	private String origin; // canale pagamento
 	
 	@Builder.Default
-    @OneToMany(targetEntity = PPTransaction.class, fetch = FetchType.LAZY, mappedBy="ppUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PPTransaction> ppTransaction = new ArrayList<>();
-
+	@OneToMany(targetEntity = PPPaymentDetail.class, fetch = FetchType.LAZY, mappedBy = "ppPayment",  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PPPaymentDetail> ppPaymentDetail = new ArrayList<>();
+	
 }

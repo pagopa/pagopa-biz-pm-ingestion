@@ -24,10 +24,10 @@ public class PMEventViewValidator {
 
 		if (!violations.isEmpty()) {
 			for(ConstraintViolation<PMEventToViewResult> v : violations) {
-				logger.log(Level.SEVERE, () -> "PMEventToView constraint violation [PMEvent id="+pmEvent.getId()+", "+v.getLeafBean().getClass()+", property:" + v.getPropertyPath() + ", value:"+  v.getInvalidValue() +", constraints: "+ v.getMessageTemplate() +"]");
+				logger.log(Level.SEVERE, () -> "PMEventToView constraint violation [PMEvent id="+pmEvent.getPkTransactionId()+", "+v.getLeafBean().getClass()+", property:" + v.getPropertyPath() + ", value:"+  v.getInvalidValue() +", constraints: "+ v.getMessageTemplate() +"]");
 			}
 			
-			throw new AppException(HttpStatus.BAD_REQUEST, "Validation Error", "Error during PMEventToView validation [BizEvent id="+pmEvent.getId()+"]");
+			throw new AppException(HttpStatus.BAD_REQUEST, "Validation Error", "Error during PMEventToView validation [BizEvent id="+pmEvent.getPkTransactionId()+"]");
 		}
 
 		return true;
