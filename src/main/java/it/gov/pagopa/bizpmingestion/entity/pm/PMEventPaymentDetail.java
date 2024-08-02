@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 public class PMEventPaymentDetail {
+	private Long   pkPaymentDetailId;
 	private String iuv;
 	private String enteBenificiario;
 	private String idDomino;

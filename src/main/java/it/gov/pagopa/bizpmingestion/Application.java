@@ -1,6 +1,7 @@
-package it.gov.pagopa.bizpmingestion; // TODO: refactor the package
+package it.gov.pagopa.bizpmingestion;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,29 +9,36 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import it.gov.pagopa.bizpmingestion.entity.pm.PMEvent;
+import it.gov.pagopa.bizpmingestion.entity.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
-import it.gov.pagopa.bizpmingestion.entity.pm.PPUser;
+import it.gov.pagopa.bizpmingestion.model.cosmos.view.PMEventToViewResult;
+import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
+import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
+import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
 import it.gov.pagopa.bizpmingestion.repository.PPTransactionRepository;
-import it.gov.pagopa.bizpmingestion.repository.PPUserRepository;
+import it.gov.pagopa.bizpmingestion.service.PMEventToViewService;
+import it.gov.pagopa.bizpmingestion.service.impl.PMEventToViewServiceImpl;
 import it.gov.pagopa.bizpmingestion.specification.PPTransactionSpec;
-import it.gov.pagopa.bizpmingestion.specification.PPUserSpec;
 import jakarta.transaction.Transactional;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 	
-	@Autowired
-    private JdbcTemplate jdbcTemplate;
 	
 	@Autowired
 	private ModelMapper modelMapper;
 	
 	@Autowired
 	private PPTransactionRepository ppTransactionRepository;
+	@Autowired
+	private BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
+	@Autowired
+	private BizEventsViewCartRepository bizEventsViewCartRepository;
+	@Autowired
+	private BizEventsViewUserRepository bizEventsViewUserRepository;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -39,14 +47,9 @@ public class Application implements CommandLineRunner {
 	@Override
 	@Transactional
     public void run(String... args) throws Exception {
-        String sql = "SELECT pu.FISCAL_CODE,pu.SURNAME,pu.NAME,pu.NOTIFICATION_EMAIL FROM PP_USER pu WHERE pu.FISCAL_CODE ='MTTNDR65A07D969V'";
-         
-        /*
-        List<PPUser> ppUserList = jdbcTemplate.query(sql,
-                BeanPropertyRowMapper.newInstance(PPUser.class));
-         
-        ppUserList.forEach(System.out :: println);*/
-        
+		
+		Logger logger = Logger.getLogger("logger");
+		
         
         /*
         PPUserSpec spec = new PPUserSpec();
@@ -58,20 +61,21 @@ public class Application implements CommandLineRunner {
         	}
         	
         }*/
-        
-        
+        PMEventToViewService pmEventToViewService = new PMEventToViewServiceImpl();
         PPTransactionSpec spec = new PPTransactionSpec();
         List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
-        int countRows = ppTrList.size();
-        for (int i=0; i<ppTrList.size(); i++) {
-        	countRows += ppTrList.get(i).getPpPayment().getPpPaymentDetail().size();
-        	//System.out.println(i+") ******** transaction info:" + ppTrList.get(i) + ", detail size:" + ppTrList.get(i).getPpPayment().getPpPaymentDetail().size());
-        	
-        	
-        	PMEvent pmEvt = modelMapper.map(ppTrList.get(i), PMEvent.class);
-        	System.out.println(i+") ******** pm event info:" + pmEvt );
+        for (int i=0; i<1; i++) {
+        	PMEvent pmEvent = modelMapper.map(ppTrList.get(i), PMEvent.class);
+        	for (PMEventPaymentDetail pmEventPaymentDetail: pmEvent.getPaymentDetailList()) {
+        		PMEventToViewResult result = pmEventToViewService.mapPMEventToView(logger, pmEvent, pmEventPaymentDetail);
+        		bizEventsViewGeneralRepository.save(result.getGeneralView());
+        		bizEventsViewCartRepository.save(result.getCartView());
+        		bizEventsViewUserRepository.saveAll(result.getUserViewList());
+        	}
         }
-        System.out.println("------- total rows:" + countRows);
+        
+        
+        
         
     }
 

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
-import it.gov.pagopa.bizpmingestion.entity.pm.PPUser;
 
 public interface PPTransactionRepository extends JpaRepository<PPTransaction, Long> {
 	

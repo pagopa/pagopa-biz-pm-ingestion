@@ -1,5 +1,7 @@
 package it.gov.pagopa.bizpmingestion.entity.cosmos.view;
 
+import com.azure.spring.data.cosmos.core.mapping.Container;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,6 +12,7 @@ import lombok.NoArgsConstructor;
 /**
  * Entity model for biz-events-view-cart
  */
+@Container(containerName = "${azure.cosmos.biz-events-view-cart-container-name}", autoCreateContainer = false, ru="1000")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

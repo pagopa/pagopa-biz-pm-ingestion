@@ -1,6 +1,6 @@
 package it.gov.pagopa.bizpmingestion.mapper;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +17,9 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
     @Override
     public PMEvent convert(MappingContext<PPTransaction, PMEvent> mappingContext) {
         PPTransaction ppTransaction = mappingContext.getSource();
-        
-        String stringCreationDate = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss").format(ppTransaction.getCreationDate());
+
+        String stringCreationDate = ppTransaction.getCreationDate().toLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+       
         
         return PMEvent.builder()
         		.pkTransactionId(ppTransaction.getId())
@@ -88,6 +89,7 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
 		for (PPPaymentDetail ppd: ppPaymentDetailList) {
 			details.add(
 					PMEventPaymentDetail.builder()
+					.pkPaymentDetailId(ppd.getId())
 					.iuv(ppd.getIuv())
 					.enteBenificiario(ppd.getEnteBeneficiario())
 					.idDomino(ppd.getIdDominio())
