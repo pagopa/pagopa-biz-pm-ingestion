@@ -20,6 +20,7 @@
 		<java.version>17</java.version>
 		<azure.functions.java.library.version>3.1.0</azure.functions.java.library.version>
 		<cosmos-data-version>5.14.0</cosmos-data-version>
+		<springdoc-openapi-ui-version>2.6.0</springdoc-openapi-ui-version>
 	</properties>
 
 	<dependencies>
@@ -91,16 +92,16 @@
 			<version>${azure.functions.java.library.version}</version>
 		</dependency>
 		<dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-spring-data-cosmos</artifactId>
-            <version>${cosmos-data-version}</version>
-        </dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-spring-data-cosmos</artifactId>
+			<version>${cosmos-data-version}</version>
+		</dependency>
 
 		<!-- Swagger/OpenAPI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.6.11</version>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc-openapi-ui-version}</version>
 		</dependency>
 
 		<!-- utilities -->

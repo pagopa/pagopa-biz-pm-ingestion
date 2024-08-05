@@ -1,0 +1,28 @@
+package it.gov.pagopa.bizpmingestion.model;
+
+import java.io.Serializable;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+public class DataExtractionOptionsModel implements Serializable {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 8329148883733208789L;
+	
+	private List<String> taxCodes;
+	@Schema(description = "if provided use the format yyyy-MM-dd")
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private String creationDateFrom;
+	@Schema(description = "if provided use the format yyyy-MM-dd")
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private String creationDateTo;
+}

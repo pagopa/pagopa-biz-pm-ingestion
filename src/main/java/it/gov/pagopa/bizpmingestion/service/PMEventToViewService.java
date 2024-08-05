@@ -1,12 +1,12 @@
 package it.gov.pagopa.bizpmingestion.service;
 
-import java.util.logging.Logger;
 
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewCart;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewGeneral;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewUser;
 import it.gov.pagopa.bizpmingestion.entity.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.entity.pm.PMEventPaymentDetail;
+import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.exception.AppException;
 import it.gov.pagopa.bizpmingestion.model.cosmos.view.PMEventToViewResult;
 
@@ -26,5 +26,5 @@ public interface PMEventToViewService {
 	 * @return a {@link PMEventToViewResult} that hold the biz-event views
 	 * @throws AppException
 	 */
-	PMEventToViewResult mapPMEventToView(Logger logger, PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail) throws AppException;
+	PMEventToViewResult mapPMEventToView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException;
 }

@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewCart;
@@ -33,6 +33,7 @@ import it.gov.pagopa.bizpmingestion.util.PMEventViewValidator;
 /**
  * {@inheritDoc}
  */
+@Service
 public class PMEventToViewServiceImpl implements PMEventToViewService {
 
     private static final String REF_TYPE_IUV = "IUV";
@@ -45,7 +46,7 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
      * @throws AppException 
      */
     @Override
-    public PMEventToViewResult mapPMEventToView(Logger logger, PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail) throws AppException {
+    public PMEventToViewResult mapPMEventToView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException {
     	UserDetail debtor = Optional.ofNullable(pmEventPaymentDetail).map(this::getDebtor).orElseThrow(); 
     	UserDetail payer  = Optional.ofNullable(pmEvent).map(this::getPayer).orElseThrow(); 
     	
@@ -75,12 +76,12 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     			 * - CARTA = PaymentMethodType.CP
     			 * - BPAY  = PaymentMethodType.JIF
     			 * - Paypal = PaymentMethodType.PPAL*/
-    			.generalView(buildGeneralView(pmEvent, pmEventPaymentDetail, payer, PaymentMethodType.CP))
+    			.generalView(buildGeneralView(pmEvent, pmEventPaymentDetail, payer, paymentMethodType))
     			.cartView(buildCartView(pmEvent, pmEventPaymentDetail, sameDebtorAndPayer ? payer : debtor))
     			.build();
 
 
-    	PMEventViewValidator.validate(logger, result, pmEvent);
+    	PMEventViewValidator.validate(result, pmEvent);
 
     	return result;
     }
@@ -129,11 +130,11 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     	LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate() , formatter) ;
     	
         return BizEventsViewCart.builder()
-        		.id(pmEventPaymentDetail.getPkPaymentDetailId().toString())
+        		.id("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear())
                 .transactionId("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear())
                 .eventId(pmEvent.getPkTransactionId().toString())
                 .subject(this.formatRemittanceInformation(pmEvent.getSubject()))
-                .amount(pmEvent.getGrandTotal().toString())
+                .amount(pmEvent.getAmount().toString())
                 .debtor(user)
                 .payee(getPayee(pmEvent, pmEventPaymentDetail))
                 .refNumberType(REF_TYPE_IUV)
@@ -146,7 +147,7 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     	LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate() , formatter) ;
     	
         return BizEventsViewGeneral.builder()
-        		.id(pmEventPaymentDetail.getPkPaymentDetailId().toString())
+        		.id("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear())
                 .transactionId("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear())
                 .authCode(pmEvent.getNumAut())
                 .rrn(pmEvent.getRrn())
@@ -173,9 +174,9 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
     	LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate() , formatter) ;
     	
         return BizEventsViewUser.builder()
-        		.id(pmEventPaymentDetail.getPkPaymentDetailId().toString())
+        		.id("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear()+(isPayer?"-p":"-d"))
+                .transactionId("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear())
                 .taxCode(userDetail.getTaxCode())
-                .transactionId("PM-"+pmEventPaymentDetail.getPkPaymentDetailId().toString()+"-"+ldt.getYear()+(isPayer?"-p":"-d"))
                 .transactionDate(pmEvent.getCreationDate())
                 .hidden(false)
                 .isPayer(isPayer)

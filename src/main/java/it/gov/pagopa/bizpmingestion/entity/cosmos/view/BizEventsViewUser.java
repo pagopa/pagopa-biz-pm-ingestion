@@ -26,6 +26,6 @@ public class BizEventsViewUser {
 	@NotBlank
 	private String transactionDate;
 	private boolean hidden;
-	private boolean isPayer;
-	private boolean isDebtor;
+	private Boolean isPayer;
+	private Boolean isDebtor;
 }
