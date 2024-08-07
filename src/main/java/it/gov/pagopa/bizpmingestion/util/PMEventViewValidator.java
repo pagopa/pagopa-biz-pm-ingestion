@@ -4,9 +4,9 @@ import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 
-import it.gov.pagopa.bizpmingestion.entity.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.exception.AppException;
-import it.gov.pagopa.bizpmingestion.model.cosmos.view.PMEventToViewResult;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;

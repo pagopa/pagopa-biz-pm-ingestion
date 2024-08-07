@@ -6,9 +6,9 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import it.gov.pagopa.bizpmingestion.entity.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import it.gov.pagopa.bizpmingestion.mapper.ConvertPPTransactionEntityToPMEvent;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 
 @Configuration
 public class MappingsConfiguration {

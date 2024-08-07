@@ -1,4 +1,4 @@
-package it.gov.pagopa.bizpmingestion.entity.pm;
+package it.gov.pagopa.bizpmingestion.model.pm;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

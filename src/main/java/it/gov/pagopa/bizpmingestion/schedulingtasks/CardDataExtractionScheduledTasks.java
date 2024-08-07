@@ -11,17 +11,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import it.gov.pagopa.bizpmingestion.entity.pm.PMEvent;
-import it.gov.pagopa.bizpmingestion.entity.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
-import it.gov.pagopa.bizpmingestion.model.cosmos.view.PMEventToViewResult;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
 import it.gov.pagopa.bizpmingestion.repository.PPTransactionRepository;
 import it.gov.pagopa.bizpmingestion.service.PMEventToViewService;
-import it.gov.pagopa.bizpmingestion.specification.PPTransactionSpec;
+import it.gov.pagopa.bizpmingestion.specification.CardExtractionSpec;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +52,7 @@ public class CardDataExtractionScheduledTasks {
 	//@Scheduled(fixedRate = 60000)
 	public void dataExtraction() {
 		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
-        PPTransactionSpec spec = new PPTransactionSpec();
+        CardExtractionSpec spec = new CardExtractionSpec();
         List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
         log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction info: Found n. "+ppTrList.size()+" transactions to save on Cosmos DB"));
         for (int i=0; i<1; i++) {

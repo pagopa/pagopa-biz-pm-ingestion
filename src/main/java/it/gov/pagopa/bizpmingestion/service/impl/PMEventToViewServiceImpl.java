@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewCart;
@@ -19,13 +20,13 @@ import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewGeneral;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.BizEventsViewUser;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.UserDetail;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.view.WalletInfo;
-import it.gov.pagopa.bizpmingestion.entity.pm.PMEvent;
-import it.gov.pagopa.bizpmingestion.entity.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.enumeration.OriginType;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.exception.AppError;
 import it.gov.pagopa.bizpmingestion.exception.AppException;
-import it.gov.pagopa.bizpmingestion.model.cosmos.view.PMEventToViewResult;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.service.PMEventToViewService;
 import it.gov.pagopa.bizpmingestion.util.PMEventViewValidator;
 
@@ -72,10 +73,6 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
 
     	PMEventToViewResult result = PMEventToViewResult.builder()
     			.userViewList(userViewToInsert)
-    			/* TODO: passare in modo dinamico il PaymentMethodType in merito al tipo di estrazione fatta sul PM 
-    			 * - CARTA = PaymentMethodType.CP
-    			 * - BPAY  = PaymentMethodType.JIF
-    			 * - Paypal = PaymentMethodType.PPAL*/
     			.generalView(buildGeneralView(pmEvent, pmEventPaymentDetail, payer, paymentMethodType))
     			.cartView(buildCartView(pmEvent, pmEventPaymentDetail, sameDebtorAndPayer ? payer : debtor))
     			.build();
@@ -157,7 +154,8 @@ public class PMEventToViewServiceImpl implements PMEventToViewService {
                         WalletInfo.builder()
                                 .brand(pmEvent.getVposCircuitCode())
                                 .blurredNumber(pmEvent.getCardNumber())
-                                .maskedEmail(pmEvent.getEmailPP())
+                                 //TODO chiedere conferma sul comporamento per valorizzare questo campo
+                                .maskedEmail(CollectionUtils.isEmpty(pmEvent.getPayPalList()) ? "" : pmEvent.getPayPalList().get(0).getEmailPP()) 
                                 .build())
                 .payer(payer)
                 .fee(currencyFormat(String.valueOf(pmEvent.getFee()/100.00)))

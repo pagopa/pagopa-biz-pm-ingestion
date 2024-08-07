@@ -1,4 +1,4 @@
-package it.gov.pagopa.bizpmingestion.entity.pm;
+package it.gov.pagopa.bizpmingestion.model.pm;
 
 import java.util.List;
 
@@ -14,8 +14,6 @@ import lombok.NoArgsConstructor;
 public class PMEvent {
 	private Long pkTransactionId;
 	private String userFiscalCode; //pu.FISCAL_CODE
-	private String vposCircuitCode;
-	private String cardNumber;
 	private String surname;
 	private String name;
 	private String businessName;
@@ -35,8 +33,11 @@ public class PMEvent {
 	private Long   pkPaymentId;
 	private String idPayment;
 	private String notificationEmail;
-	private String emailPP;
 	private Byte   status;
 	private Byte   accountingStatus;
+	private String cardNumber; // only for CARD extraction
+	private String vposCircuitCode; // only for CARD extraction
+	private String cellphoneNumber; // only for BPAY extraction
+	private List<PMEventPayPal> payPalList; // only for PAYPAL extraction
 	private List<PMEventPaymentDetail> paymentDetailList;
 }

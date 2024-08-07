@@ -19,7 +19,7 @@ import jakarta.persistence.criteria.Root;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class PPTransactionSpec implements Specification<PPTransaction> {
+public class CardExtractionSpec implements Specification<PPTransaction> {
 	
 	/**
 	 * 
@@ -31,7 +31,7 @@ public class PPTransactionSpec implements Specification<PPTransaction> {
     private String creationDateTo;
     private List<String> taxCodes;
 
-	public PPTransactionSpec(String dateFrom, String dateTo, List<String> taxCodes) {
+	public CardExtractionSpec(String dateFrom, String dateTo, List<String> taxCodes) {
 		this.creationDateFrom = dateFrom;
 		this.creationDateTo = dateTo;
 		this.taxCodes = taxCodes;

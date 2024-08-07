@@ -1,4 +1,4 @@
-package it.gov.pagopa.bizpmingestion.model.cosmos.view;
+package it.gov.pagopa.bizpmingestion.model.pm;
 
 import java.util.List;
 
