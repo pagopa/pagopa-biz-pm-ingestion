@@ -4,6 +4,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -49,5 +54,17 @@ public class CommonUtility {
 	public static long getTimelapse(long startTime) {
 		return Calendar.getInstance().getTimeInMillis() - startTime;
 	}
+	
+	/**
+     * @param object to map into the Json string
+     * @return object as Json string
+     * @throws JsonProcessingException if there is an error during the parsing of the object
+     */
+    public static String toJson(Object object) throws JsonProcessingException {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                .writeValueAsString(object);
+    }
 
 }

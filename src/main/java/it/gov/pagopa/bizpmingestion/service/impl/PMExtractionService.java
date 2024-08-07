@@ -22,7 +22,7 @@ import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
 import it.gov.pagopa.bizpmingestion.repository.PPTransactionRepository;
 import it.gov.pagopa.bizpmingestion.service.IPMExtractionService;
-import it.gov.pagopa.bizpmingestion.service.PMEventToViewService;
+import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import it.gov.pagopa.bizpmingestion.specification.BPayExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.CardExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.PayPalExtractionSpec;
@@ -40,20 +40,31 @@ public class PMExtractionService implements IPMExtractionService{
 	private ModelMapper modelMapper;
 	@Autowired
 	private PPTransactionRepository ppTransactionRepository;
-	@Autowired
+	//@Autowired
 	private BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
-	@Autowired
+	//@Autowired
 	private BizEventsViewCartRepository bizEventsViewCartRepository;
-	@Autowired
+	//@Autowired
 	private BizEventsViewUserRepository bizEventsViewUserRepository;
 	@Autowired
-	private PMEventToViewService pmEventToViewService;
+	private IPMEventToViewService pmEventToViewService;
+	
+	public PMExtractionService(PPTransactionRepository ppTransactionRepository,
+			BizEventsViewGeneralRepository bizEventsViewGeneralRepository,
+			BizEventsViewCartRepository bizEventsViewCartRepository,
+			BizEventsViewUserRepository bizEventsViewUserRepository) {
+		super();
+		this.ppTransactionRepository = ppTransactionRepository;
+		this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
+		this.bizEventsViewCartRepository = bizEventsViewCartRepository;
+		this.bizEventsViewUserRepository = bizEventsViewUserRepository;
+	}
 
 	@Override
 	public void pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType) {
 		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, pmExtractionType + " type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		
-		PaymentMethodType paymentMethodType = PaymentMethodType.UNKNOWN;
+		PaymentMethodType paymentMethodType;
 		Specification<PPTransaction> spec = null;
 
 		switch (pmExtractionType) {

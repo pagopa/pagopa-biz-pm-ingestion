@@ -17,7 +17,7 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
  * <li>{@link BizEventsViewGeneral}
  * <li>{@link BizEventsViewCart}
  */
-public interface PMEventToViewService {
+public interface IPMEventToViewService {
 
 	/**
 	 * Map the provided biz-event to its views

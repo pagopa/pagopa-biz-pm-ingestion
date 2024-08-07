@@ -20,7 +20,7 @@ import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
 import it.gov.pagopa.bizpmingestion.repository.PPTransactionRepository;
-import it.gov.pagopa.bizpmingestion.service.PMEventToViewService;
+import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import it.gov.pagopa.bizpmingestion.specification.CardExtractionSpec;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class CardDataExtractionScheduledTasks {
 	@Autowired
 	private BizEventsViewUserRepository bizEventsViewUserRepository;
 	@Autowired
-	private PMEventToViewService pmEventToViewService;
+	private IPMEventToViewService pmEventToViewService;
 
 	@Scheduled(cron = "-")
 	//@Scheduled(fixedRate = 60000)

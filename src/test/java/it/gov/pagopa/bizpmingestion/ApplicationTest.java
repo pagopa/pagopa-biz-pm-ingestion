@@ -1,4 +1,4 @@
-package it.gov.pagopa.microservice;
+package it.gov.pagopa.bizpmingestion;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

@@ -27,7 +27,7 @@ import it.gov.pagopa.bizpmingestion.exception.AppException;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
-import it.gov.pagopa.bizpmingestion.service.PMEventToViewService;
+import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import it.gov.pagopa.bizpmingestion.util.PMEventViewValidator;
 
 
@@ -35,7 +35,7 @@ import it.gov.pagopa.bizpmingestion.util.PMEventViewValidator;
  * {@inheritDoc}
  */
 @Service
-public class PMEventToViewServiceImpl implements PMEventToViewService {
+public class PMEventToViewServiceImpl implements IPMEventToViewService {
 
     private static final String REF_TYPE_IUV = "IUV";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
