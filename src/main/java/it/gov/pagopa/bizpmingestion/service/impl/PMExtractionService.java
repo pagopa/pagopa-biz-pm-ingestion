@@ -26,6 +26,7 @@ import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import it.gov.pagopa.bizpmingestion.specification.BPayExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.CardExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.PayPalExtractionSpec;
+import it.gov.pagopa.bizpmingestion.util.CommonUtility;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -62,7 +63,7 @@ public class PMExtractionService implements IPMExtractionService{
 
 	@Override
 	public void pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType) {
-		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, pmExtractionType + " type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		
 		PaymentMethodType paymentMethodType;
 		Specification<PPTransaction> spec = null;
@@ -86,7 +87,7 @@ public class PMExtractionService implements IPMExtractionService{
 		}
 
 		List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
-		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, pmExtractionType + " type data extraction info: Found n. "+ppTrList.size()+" transactions to save on Cosmos DB."
+		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Found n. "+ppTrList.size()+" transactions to save on Cosmos DB."
 				+ "Setted Filters: dateFrom="+dateFrom+", dateFrom="+dateTo+", taxCodes="+taxCodes));
 		for (int i=0; i<ppTrList.size(); i++) {
 			PMEvent pmEvent = modelMapper.map(ppTrList.get(i), PMEvent.class);
@@ -97,7 +98,7 @@ public class PMExtractionService implements IPMExtractionService{
 				bizEventsViewUserRepository.saveAll(result.getUserViewList());
 			}
 		}
-		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, pmExtractionType + " type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));    
+		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));    
 	}
 
 }

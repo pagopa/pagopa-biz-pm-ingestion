@@ -9,6 +9,7 @@ import it.gov.pagopa.bizpmingestion.controller.IPMExtractionController;
 import it.gov.pagopa.bizpmingestion.enumeration.PMExtractionType;
 import it.gov.pagopa.bizpmingestion.model.DataExtractionOptionsModel;
 import it.gov.pagopa.bizpmingestion.service.IPMExtractionService;
+import it.gov.pagopa.bizpmingestion.util.CommonUtility;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -21,9 +22,9 @@ public class PMExtractionController implements IPMExtractionController {
 	
 	@Override
 	public ResponseEntity<Void> pmDataExtraction(PMExtractionType pmExtractionType,
-			DataExtractionOptionsModel paymentOptionModel) {
-		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "pmDataExtraction", pmExtractionType +"; " +paymentOptionModel));
-		pmExtractionService.pmDataExtraction(paymentOptionModel.getCreationDateFrom(), paymentOptionModel.getCreationDateTo(), paymentOptionModel.getTaxCodes(), pmExtractionType);
+			DataExtractionOptionsModel dataExtractionOptionsModel) {
+		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "pmDataExtraction", CommonUtility.sanitize(pmExtractionType.toString()) +"; " +CommonUtility.sanitize(dataExtractionOptionsModel.toString())));
+		pmExtractionService.pmDataExtraction(dataExtractionOptionsModel.getCreationDateFrom(), dataExtractionOptionsModel.getCreationDateTo(), dataExtractionOptionsModel.getTaxCodes(), pmExtractionType);
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 }
