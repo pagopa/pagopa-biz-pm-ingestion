@@ -4,6 +4,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
+import org.owasp.esapi.ESAPI;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -65,6 +67,13 @@ public class CommonUtility {
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 .writeValueAsString(object);
+    }
+    
+    public static String sanitize(String message) {
+        message = message.replace( '\n' ,  '_' ).replace( '\r' , '_' )
+          .replace( '\t' , '_' );
+        message = ESAPI.encoder().encodeForHTML( message );
+        return message;
     }
 
 }
