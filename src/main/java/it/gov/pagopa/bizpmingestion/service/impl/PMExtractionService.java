@@ -88,7 +88,7 @@ public class PMExtractionService implements IPMExtractionService{
 
 		List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
 		log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Found n. "+ppTrList.size()+" transactions to save on Cosmos DB."
-				+ "Setted Filters: dateFrom="+dateFrom+", dateFrom="+dateTo+", taxCodes="+taxCodes));
+				+ "Setted Filters: dateFrom="+CommonUtility.sanitize(dateFrom)+", dateFrom="+CommonUtility.sanitize(dateTo)+", taxCodes="+CommonUtility.sanitize(taxCodes.toString())));
 		for (int i=0; i<ppTrList.size(); i++) {
 			PMEvent pmEvent = modelMapper.map(ppTrList.get(i), PMEvent.class);
 			for (PMEventPaymentDetail pmEventPaymentDetail: pmEvent.getPaymentDetailList()) {

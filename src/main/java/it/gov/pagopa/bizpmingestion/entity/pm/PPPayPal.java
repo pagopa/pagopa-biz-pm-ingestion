@@ -31,6 +31,9 @@ public class PPPayPal {
 	@Column(name = "EMAIL_PP", nullable = false)
 	private String emailPP;	
 	
+	@Column(name = "IS_DEFAULT", nullable = false)
+	private Byte isDefault;	
+	
 	@Column(name = "FK_WALLET", nullable = false)
 	private Long fkWallet;
 	

@@ -51,7 +51,7 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
 		Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
 		Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
 		Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
-		ppWalletJoin.join("ppPayPal", JoinType.INNER);
+		Join<?, ?> ppPayPalJoin = ppWalletJoin.join("ppPayPal", JoinType.INNER);
 		root.join("ppPsp", JoinType.INNER);
 		ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
 		
@@ -63,6 +63,7 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
 		
 		cb.isNotNull(ppWalletJoin.get("fkCreditCard"));
 		Predicate predicateType = cb.equal(ppWalletJoin.get("type"), 5);
+		Predicate predicateDefault = cb.equal(ppPayPalJoin.get("isDefault"), 1);
 		
 
 		Expression<Byte> exp = root.get("status");
@@ -89,6 +90,6 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
 
 		Predicate predicatePPTransactionStatus = cb.and(predicateStatus, predicateAccountingStatus);
 
-		return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus,predicateType), creationDatePredicate);
+		return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus,predicateType), predicateDefault, creationDatePredicate);
 	}
 }
