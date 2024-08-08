@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @ConditionalOnProperty(name = "cron.job.schedule.card.enabled", matchIfMissing = true)
 @Slf4j
-public class CardDataExtractionScheduledTasks {
+public class CardDataExtractionScheduledTask {
 	
 	private static final String LOG_BASE_HEADER_INFO = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
 	private static final String CRON_JOB = "CRON JOB - CardDataExtractionScheduledTasks";
@@ -47,9 +47,14 @@ public class CardDataExtractionScheduledTasks {
 	private BizEventsViewUserRepository bizEventsViewUserRepository;
 	@Autowired
 	private IPMEventToViewService pmEventToViewService;
+	
+	public CardDataExtractionScheduledTask(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository) {
+		super();
+		this.modelMapper = modelMapper;
+		this.ppTransactionRepository = ppTransactionRepository;
+	}
 
 	@Scheduled(cron = "-")
-	//@Scheduled(fixedRate = 60000)
 	public void dataExtraction() {
 		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
         CardExtractionSpec spec = new CardExtractionSpec();
@@ -66,4 +71,6 @@ public class CardDataExtractionScheduledTasks {
         }
         log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 	}
+
+	
 }

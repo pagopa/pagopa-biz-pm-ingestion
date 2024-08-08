@@ -1,4 +1,4 @@
-package it.gov.pagopa.bizpmingestion.util;
+package it.gov.pagopa.bizpmingestion.configuration;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;

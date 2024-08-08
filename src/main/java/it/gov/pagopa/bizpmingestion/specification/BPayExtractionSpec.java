@@ -52,6 +52,7 @@ public class BPayExtractionSpec implements Specification<PPTransaction> {
 		Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
 		Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
 		ppWalletJoin.join("ppBPay", JoinType.INNER);
+		ppWalletJoin.join("ppCreditCard", JoinType.INNER);
 		root.join("ppPsp", JoinType.INNER);
 		ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
 		

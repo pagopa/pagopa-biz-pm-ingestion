@@ -41,25 +41,15 @@ public class PMExtractionService implements IPMExtractionService{
 	private ModelMapper modelMapper;
 	@Autowired
 	private PPTransactionRepository ppTransactionRepository;
-	//@Autowired
+	@Autowired
 	private BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
-	//@Autowired
+	@Autowired
 	private BizEventsViewCartRepository bizEventsViewCartRepository;
-	//@Autowired
+	@Autowired
 	private BizEventsViewUserRepository bizEventsViewUserRepository;
 	@Autowired
 	private IPMEventToViewService pmEventToViewService;
 	
-	public PMExtractionService(PPTransactionRepository ppTransactionRepository,
-			BizEventsViewGeneralRepository bizEventsViewGeneralRepository,
-			BizEventsViewCartRepository bizEventsViewCartRepository,
-			BizEventsViewUserRepository bizEventsViewUserRepository) {
-		super();
-		this.ppTransactionRepository = ppTransactionRepository;
-		this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
-		this.bizEventsViewCartRepository = bizEventsViewCartRepository;
-		this.bizEventsViewUserRepository = bizEventsViewUserRepository;
-	}
 
 	@Override
 	public void pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType) {

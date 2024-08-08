@@ -50,6 +50,7 @@ public class CardExtractionSpec implements Specification<PPTransaction> {
 
 		Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
 		Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
+		ppWalletJoin.join("ppBPay", JoinType.INNER);
 		ppWalletJoin.join("ppCreditCard", JoinType.INNER);
 		Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
 		ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
