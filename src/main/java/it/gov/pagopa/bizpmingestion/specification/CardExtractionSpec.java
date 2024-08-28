@@ -27,6 +27,8 @@ public class CardExtractionSpec implements Specification<PPTransaction> {
 	private static final long serialVersionUID = 4326675556613149717L;
 	
 	private static final String CREATION_DATE = "creationDate";
+	private static final Byte[] statusFilter = {3,8,9,14,21};
+	private static final Byte[] accountingStatusFilter = {null,1,5};
 	private String creationDateFrom;
     private String creationDateTo;
     private List<String> taxCodes;
@@ -41,9 +43,6 @@ public class CardExtractionSpec implements Specification<PPTransaction> {
 	public Predicate toPredicate(Root<PPTransaction> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
 		query.distinct(true);
-
-		Byte[] statusFilter = {3,8,9,14,21};
-		Byte[] accountingStatusFilter = {null,1,5};
 
 		Predicate creationDatePredicate = cb.isTrue(cb.literal(true));
 		Predicate predicatePPUserfiscalCode = cb.isTrue(cb.literal(true));
