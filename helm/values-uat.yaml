@@ -91,8 +91,8 @@ microservice-chart:
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-u-connection-string'
     OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
     COSMOS_DB_PRIMARY_KEY: 'cosmos-u-biz-key'
-    ORACLE_PM_DB_URL: 'oracle-u-db-url'
-    ORACLE_PM_DB_PWD: 'oracle-u-db-pwd'
+    ORACLE_PM_DB_URL: 'oracle-pm-db-url'
+    ORACLE_PM_DB_PWD: 'oracle-pm-db-pwd'
   keyvault:
     name: "pagopa-u-bizevents-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
