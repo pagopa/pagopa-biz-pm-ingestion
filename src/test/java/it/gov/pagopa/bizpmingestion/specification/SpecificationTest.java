@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -49,7 +48,7 @@ class SpecificationTest {
 
 
 	@BeforeEach
-	void setUp() throws IOException {
+	void setUp() {
 		// precondition
 		Join<Object, Object> joinMock = (Join<Object, Object>) mock(Join.class);
 		when(ppTransactionMock.join(anyString(), eq(JoinType.INNER))).thenReturn(joinMock);
@@ -62,7 +61,7 @@ class SpecificationTest {
 
 	@ParameterizedTest
 	@ValueSource(ints = {1, 2, 3})
-	void checkExtractionSpec(int args) throws Exception  {
+	void checkExtractionSpec(int args) {
 		
 		Timestamp from = Timestamp.valueOf(LocalDate.parse(creationDateFrom, DateTimeFormatter.ISO_DATE).atStartOfDay());
 		Timestamp to   = Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE).atStartOfDay());
