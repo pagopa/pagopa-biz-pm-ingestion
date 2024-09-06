@@ -78,7 +78,7 @@ microservice-chart:
     COSMOS_DB_VIEW_GENERAL_CONTAINER_NAME: 'biz-events-view-general'
     COSMOS_DB_VIEW_CART_CONTAINER_NAME: 'biz-events-view-cart'
     COSMOS_QUERY_METRICS: 'false'
-    ORACLE_PM_DB_USER: 'AGID_USER'
+    ORACLE_PM_DB_USER: 'PAGOPA_READER'
     OTEL_SERVICE_NAME: 'pagopabizpmingestion'
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=dev"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
