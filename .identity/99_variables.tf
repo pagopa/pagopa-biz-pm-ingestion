@@ -3,18 +3,13 @@ locals {
     org        = "pagopa"
     repository = "pagopa-biz-pm-ingestion"
   }
-  prefix = "pagopa"
-  product = "${local.prefix}-${var.env_short}"
-  project = "${local.prefix}-${var.env_short}-${local.location_short}-${local.domain}"
-  runner = "${local.prefix}-${var.env_short}-${local.location_short}"
+
+  prefix         = "pagopa"
+  domain         = "bizevents"
+  location_short = "weu"
+  product        = "${var.prefix}-${var.env_short}"
 
   app_name = "github-${local.github.org}-${local.github.repository}-${var.prefix}-${local.domain}-${var.env}-aks"
-
-  domain = "bizevents"
-  location_short  = "weu"
-
-  pagopa_apim_name = "${local.product}-apim"
-  pagopa_apim_rg   = "${local.product}-api-rg"
 
   aks_cluster = {
     name                = "${local.product}-${local.location_short}-${var.env}-aks"
@@ -40,7 +35,7 @@ variable "prefix" {
   default = "pagopa"
   validation {
     condition = (
-    length(var.prefix) <= 6
+      length(var.prefix) <= 6
     )
     error_message = "Max length is 6 chars."
   }
@@ -53,16 +48,9 @@ variable "github_repository_environment" {
     reviewers_teams        = list(string)
   })
   description = "GitHub Continuous Integration roles"
-  default     = {
+  default = {
     protected_branches     = false
     custom_branch_policies = true
-    reviewers_teams        = ["pagopa-tech"]
+    reviewers_teams        = ["pagopa-team-core"]
   }
-
-}
-
-
-variable "k8s_kube_config_path_prefix" {
-  type    = string
-  default = "~/.kube"
 }
