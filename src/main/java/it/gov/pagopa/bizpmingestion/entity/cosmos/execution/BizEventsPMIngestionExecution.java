@@ -26,7 +26,7 @@ public class BizEventsPMIngestionExecution {
     private String dateTo;
     private PMExtractionType extractionType;
     private List<String> taxCodesFilter;
-    private List<Long> skippedID;
+    private List<SkippedTransaction> skippedID;
     private Integer numRecordFound;
     private Integer numRecordIngested;
     private String startTime;

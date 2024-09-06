@@ -2,13 +2,15 @@ package it.gov.pagopa.bizpmingestion.service.impl;
 
 import com.microsoft.azure.functions.annotation.ExponentialBackoffRetry;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.BizEventsPMIngestionExecution;
+import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.SkippedTransaction;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
-import it.gov.pagopa.bizpmingestion.exception.AppError;
-import it.gov.pagopa.bizpmingestion.exception.AppException;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
-import it.gov.pagopa.bizpmingestion.repository.*;
+import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
+import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
+import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
+import it.gov.pagopa.bizpmingestion.repository.PMIngestionExecutionRepository;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,30 +52,30 @@ public class AsyncService {
         try {
             pmIngestionExec.setStatus("DONE");
 
-            List<Long> skippedId = pmEventList.parallelStream()
+            List<SkippedTransaction> skippedId = pmEventList.parallelStream()
                     .map(pmEvent -> {
                         try {
                             PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
                                     .orElse(Collections.emptyList())
                                     .stream()
                                     .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                                    .orElseThrow();
+                                    .orElseThrow(() -> new RuntimeException("importo null. transactionId=" + pmEvent.getPkTransactionId()));
 
                             PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
                             if (result != null) {
                                 saveOnCosmos(result);
 
                             } else {
-                                log.warn("skipped");
-                                throw new AppException(AppError.INTERNAL_SERVER_ERROR);
+                                throw new RuntimeException("payer and debtor are null. transactionID=" + pmEvent.getPkTransactionId());
                             }
                             return null;
                         } catch (Exception e) {
                             pmIngestionExec.setStatus("DONE WITH SKIP");
 
-                            log.error(String.format(LOG_BASE_HEADER_INFO, "processDataAsync", "[processId=" + pmIngestionExec.getId() + "] - Error importing PM event with id=" + pmEvent.getPkTransactionId()
-                                    + " (err desc = " + e.getMessage() + ")"), e);
-                            return pmEvent.getPkTransactionId();
+                            return SkippedTransaction.builder()
+                                    .transactionId(pmEvent.getPkTransactionId())
+                                    .cause(e.getMessage())
+                                    .build();
                         }
                     })
                     .filter(Objects::nonNull)
@@ -89,7 +91,7 @@ public class AsyncService {
         } finally {
             pmIngestionExec.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(LocalDateTime.now()));
             pmIngestionExecutionRepository.save(pmIngestionExec);
-
+            log.info("Done!");
         }
     }
 
