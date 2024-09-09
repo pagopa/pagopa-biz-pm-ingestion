@@ -92,6 +92,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                     .taxCode(pmEventPaymentDetail.getCodicePagatore())
                     .build();
         }
+        // TODO handle not valid taxcode -> skip if invalid
         throw new AppException(AppError.BAD_REQUEST, 
         		"Missing or invalid debtor info [name="+pmEventPaymentDetail.getNomePagatore()+", taxCode="+pmEventPaymentDetail.getCodicePagatore()+"]");
     }
