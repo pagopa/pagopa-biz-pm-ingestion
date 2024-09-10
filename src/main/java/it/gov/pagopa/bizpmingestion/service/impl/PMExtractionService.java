@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -36,18 +37,22 @@ public class PMExtractionService implements IPMExtractionService {
     private static final String LOG_BASE_HEADER_INFO = "[ClassMethod: %s] - [MethodParamsToLog: %s]";
     private static final String METHOD = "pmDataExtraction";
 
+    private final ModelMapper modelMapper;
+    private final PPTransactionRepository ppTransactionRepository;
+    private final BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
+    private final BizEventsViewCartRepository bizEventsViewCartRepository;
+    private final BizEventsViewUserRepository bizEventsViewUserRepository;
+    private final IPMEventToViewService pmEventToViewService;
+
     @Autowired
-    private ModelMapper modelMapper;
-    @Autowired
-    private PPTransactionRepository ppTransactionRepository;
-    @Autowired
-    private BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
-    @Autowired
-    private BizEventsViewCartRepository bizEventsViewCartRepository;
-    @Autowired
-    private BizEventsViewUserRepository bizEventsViewUserRepository;
-    @Autowired
-    private IPMEventToViewService pmEventToViewService;
+    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository, BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository, BizEventsViewUserRepository bizEventsViewUserRepository, IPMEventToViewService pmEventToViewService) {
+        this.modelMapper = modelMapper;
+        this.ppTransactionRepository = ppTransactionRepository;
+        this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
+        this.bizEventsViewCartRepository = bizEventsViewCartRepository;
+        this.bizEventsViewUserRepository = bizEventsViewUserRepository;
+        this.pmEventToViewService = pmEventToViewService;
+    }
 
 
     @Override
@@ -55,33 +60,34 @@ public class PMExtractionService implements IPMExtractionService {
         log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 
         PaymentMethodType paymentMethodType;
-        Specification<PPTransaction> spec = null;
-
-        switch (pmExtractionType) {
-            case CARD:
+        Specification<PPTransaction> spec = switch (pmExtractionType) {
+            case CARD -> {
                 paymentMethodType = PaymentMethodType.CP;
-                spec = new CardExtractionSpec(dateFrom, dateTo, taxCodes);
-                break;
-            case BPAY:
+                yield new CardExtractionSpec(dateFrom, dateTo, taxCodes);
+            }
+            case BPAY -> {
                 paymentMethodType = PaymentMethodType.JIF;
-                spec = new BPayExtractionSpec(dateFrom, dateTo, taxCodes);
-                break;
-            case PAYPAL:
+                yield new BPayExtractionSpec(dateFrom, dateTo, taxCodes);
+            }
+            case PAYPAL -> {
                 paymentMethodType = PaymentMethodType.PPAL;
-                spec = new PayPalExtractionSpec(dateFrom, dateTo, taxCodes);
-                break;
-            default:
-                throw new AppException(AppError.BAD_REQUEST,
-                        "Invalid PM extraction type [pmExtractionType=" + pmExtractionType + "]");
-        }
+                yield new PayPalExtractionSpec(dateFrom, dateTo, taxCodes);
+            }
+            default -> throw new AppException(AppError.BAD_REQUEST,
+                    "Invalid PM extraction type [pmExtractionType=" + pmExtractionType + "]");
+        };
 
         List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
         log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Found n. " + ppTrList.size() + " transactions to save on Cosmos DB."
                 + "Setted Filters: dateFrom=" + CommonUtility.sanitize(dateFrom) + ", dateFrom=" + CommonUtility.sanitize(dateTo) + ", taxCodes=" + CommonUtility.sanitize(taxCodes.toString())));
         for (PPTransaction ppTransaction : ppTrList) {
             PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
-            for (PMEventPaymentDetail pmEventPaymentDetail : pmEvent.getPaymentDetailList()) {
-                PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+            PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
+                    .stream()
+                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
+                    .orElseThrow();
+            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+            if (result != null) {
                 bizEventsViewGeneralRepository.save(result.getGeneralView());
                 bizEventsViewCartRepository.save(result.getCartView());
                 bizEventsViewUserRepository.saveAll(result.getUserViewList());

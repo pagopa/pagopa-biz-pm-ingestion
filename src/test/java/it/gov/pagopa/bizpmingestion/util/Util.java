@@ -4,7 +4,6 @@ import it.gov.pagopa.bizpmingestion.entity.pm.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,6 +55,7 @@ public class Util {
                 .id(77777L)
                 .emailPP("emailPP")
                 .fkWallet(44444L)
+                .isDefault(1)
                 .build();
 
         PPWallet wallet = PPWallet.builder()

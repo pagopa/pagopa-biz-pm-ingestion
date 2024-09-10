@@ -17,9 +17,11 @@ public class PMEventViewValidator {
     private PMEventViewValidator() {
     }
 
-    public static boolean validate(PMEventToViewResult pmEventToViewResult, PMEvent pmEvent) throws AppException {
-        ValidatorFactory factory = jakarta.validation.Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
+    public static void validate(PMEventToViewResult pmEventToViewResult, PMEvent pmEvent) throws AppException {
+        Validator validator;
+        try (ValidatorFactory factory = jakarta.validation.Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
         Set<ConstraintViolation<PMEventToViewResult>> violations = validator.validate(pmEventToViewResult);
 
         if (!violations.isEmpty()) {
@@ -30,8 +32,6 @@ public class PMEventViewValidator {
 
             throw new AppException(HttpStatus.BAD_REQUEST, "Validation Error", "Error during PMEventToView validation [BizEvent id=" + pmEvent.getPkTransactionId() + "]");
         }
-
-        return true;
     }
 
 }

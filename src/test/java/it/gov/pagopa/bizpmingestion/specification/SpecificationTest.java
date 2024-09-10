@@ -12,7 +12,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,6 +21,8 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class SpecificationTest {
 
+    private final String creationDateFrom = "2024-08-01";
+    private final String creationDateTo = "2024-08-31";
     @Mock
     Path<Object> pathMock;
     @Mock
@@ -30,9 +31,6 @@ class SpecificationTest {
     private CriteriaQuery criteriaQueryMock;
     @Mock
     private Root<PPTransaction> ppTransactionMock;
-    private final String creationDateFrom = "2024-08-01";
-    private final String creationDateTo = "2024-08-31";
-
 
     @BeforeEach
     void setUp() {

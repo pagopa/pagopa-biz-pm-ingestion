@@ -9,9 +9,10 @@ import it.gov.pagopa.bizpmingestion.exception.AppException;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
+import jakarta.validation.constraints.NotNull;
 
 /**
- * Service that map a {@link BizEvent} to its view:
+ * Service that map a {@link PMEvent} to its view:
  * <ul>
  * <li>{@link BizEventsViewUser}
  * <li>{@link BizEventsViewGeneral}
@@ -22,9 +23,9 @@ public interface IPMEventToViewService {
     /**
      * Map the provided biz-event to its views
      *
-     * @param bizEvent the event to process
+     * @param pmEvent the event to process
      * @return a {@link PMEventToViewResult} that hold the biz-event views
      * @throws AppException
      */
-    PMEventToViewResult mapPMEventToView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException;
+    PMEventToViewResult mapPMEventToView(@NotNull PMEvent pmEvent, @NotNull PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException;
 }
