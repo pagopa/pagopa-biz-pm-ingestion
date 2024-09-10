@@ -23,7 +23,4 @@ public class UserDetail implements Serializable {
     @NotBlank
     private String taxCode;
 
-    public boolean isWithoutInfo() {
-        return name == null && taxCode == null;
-    }
 }
