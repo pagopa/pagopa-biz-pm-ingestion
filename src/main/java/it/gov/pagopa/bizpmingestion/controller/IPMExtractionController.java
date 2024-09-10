@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.bizpmingestion.enumeration.PMExtractionType;
 import it.gov.pagopa.bizpmingestion.model.DataExtractionOptionsModel;
 import it.gov.pagopa.bizpmingestion.model.ProblemJson;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -34,7 +35,7 @@ public interface IPMExtractionController {
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
     ResponseEntity<Void> pmDataExtraction(
-            @RequestParam(required = true, name = "pmExtractionType", defaultValue = "CARD") PMExtractionType pmExtractionType,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED, implementation = PMExtractionType.class) @RequestParam(required = true, name = "pmExtractionType", defaultValue = "CARD") @NotNull PMExtractionType pmExtractionType,
             @RequestBody DataExtractionOptionsModel dataExtractionOptionsModel);
 
 }

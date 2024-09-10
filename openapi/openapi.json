@@ -17,10 +17,9 @@
         "parameters" : [ {
           "name" : "pmExtractionType",
           "in" : "query",
-          "required" : false,
+          "required" : true,
           "schema" : {
             "type" : "string",
-            "default" : "CARD",
             "enum" : [ "CARD", "BPAY", "PAYPAL" ]
           }
         } ],
@@ -35,31 +34,8 @@
           "required" : true
         },
         "responses" : {
-          "400" : {
-            "description" : "Malformed request.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Wrong or missing function key."
-          },
           "422" : {
             "description" : "Unprocessable entity.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -78,8 +54,21 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict.",
+          "404" : {
+            "description" : "Not found.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key."
+          },
+          "400" : {
+            "description" : "Malformed request.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -90,6 +79,16 @@
           },
           "200" : {
             "description" : "Request paid."
+          },
+          "409" : {
+            "description" : "Conflict.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
           }
         },
         "security" : [ {
