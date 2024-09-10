@@ -83,9 +83,11 @@ public class PMExtractionService implements IPMExtractionService {
             PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
             for (PMEventPaymentDetail pmEventPaymentDetail : pmEvent.getPaymentDetailList()) {
                 PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
-                bizEventsViewGeneralRepository.save(result.getGeneralView());
-                bizEventsViewCartRepository.save(result.getCartView());
-                bizEventsViewUserRepository.saveAll(result.getUserViewList());
+                if (result != null) {
+                    bizEventsViewGeneralRepository.save(result.getGeneralView());
+                    bizEventsViewCartRepository.save(result.getCartView());
+                    bizEventsViewUserRepository.saveAll(result.getUserViewList());
+                }
             }
         }
         log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));

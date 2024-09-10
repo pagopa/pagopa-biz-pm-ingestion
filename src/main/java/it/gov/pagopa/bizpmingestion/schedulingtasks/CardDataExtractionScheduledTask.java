@@ -52,7 +52,12 @@ public class CardDataExtractionScheduledTask {
         this.pmEventToViewService = pmEventToViewService;
     }
 
+    /**
+     * @deprecated
+     * use REST APIs instead
+     */
     @Scheduled(cron = "-")
+    @Deprecated(forRemoval = true)
     public void dataExtraction() {
         log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
         CardExtractionSpec spec = new CardExtractionSpec();
@@ -60,17 +65,13 @@ public class CardDataExtractionScheduledTask {
         log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction info: Found n. " + ppTrList.size() + " transactions to save on Cosmos DB"));
         for (int i = 0; i < 1; i++) {
             PMEvent pmEvent = modelMapper.map(ppTrList.get(i), PMEvent.class);
-            if (pmEvent == null) {
-                continue;
-            }
             for (PMEventPaymentDetail pmEventPaymentDetail : pmEvent.getPaymentDetailList()) {
-                if (pmEventPaymentDetail == null) {
-                    continue;
-                }
                 PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, PaymentMethodType.CP);
-                bizEventsViewGeneralRepository.save(result.getGeneralView());
-                bizEventsViewCartRepository.save(result.getCartView());
-                bizEventsViewUserRepository.saveAll(result.getUserViewList());
+                if (result != null) {
+                    bizEventsViewGeneralRepository.save(result.getGeneralView());
+                    bizEventsViewCartRepository.save(result.getCartView());
+                    bizEventsViewUserRepository.saveAll(result.getUserViewList());
+                }
             }
         }
         log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "CARD type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));

@@ -10,10 +10,12 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import it.gov.pagopa.bizpmingestion.util.PMEventViewValidator;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -30,6 +32,7 @@ import java.util.regex.Pattern;
  * {@inheritDoc}
  */
 @Service
+@Validated
 public class PMEventToViewServiceImpl implements IPMEventToViewService {
 
     private static final String REF_TYPE_IUV = "IUV";
@@ -49,9 +52,23 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
         UserDetail debtor = getDebtor(pmEventPaymentDetail);
         UserDetail payer = getPayer(pmEvent);
 
+       /*
+
+        debtor | payer     |  output
+            Y  |  Y        | if CF are equal we'll save only payer otherwise we will save payer and debtor
+            Y  |  N        | we'll save only debtor
+            N  |  Y        | we'll save only payer
+            N  |  N        | skip and return null
+
+       */
+
+        if (debtor == null && payer == null) {
+            return null;
+        }
+
         boolean sameDebtorAndPayer = false;
 
-        if (debtor != null && debtor.getTaxCode() != null && debtor.getTaxCode().equals(payer.getTaxCode())) {
+        if (debtor != null && payer != null && debtor.getTaxCode() != null && debtor.getTaxCode().equals(payer.getTaxCode())) {
             sameDebtorAndPayer = true;
             // only the payer user is created when payer and debtor are the same
             debtor = null;
@@ -64,8 +81,10 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
             userViewToInsert.add(debtorUserView);
         }
 
-        BizEventsViewUser payerUserView = buildUserView(pmEvent, pmEventPaymentDetail, payer, true, sameDebtorAndPayer);
-        userViewToInsert.add(payerUserView);
+        if (payer != null) {
+            BizEventsViewUser payerUserView = buildUserView(pmEvent, pmEventPaymentDetail, payer, true, sameDebtorAndPayer);
+            userViewToInsert.add(payerUserView);
+        }
 
         PMEventToViewResult result = PMEventToViewResult.builder()
                 .userViewList(userViewToInsert)
@@ -79,30 +98,39 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
         return result;
     }
 
+    @Nullable
     UserDetail getDebtor(PMEventPaymentDetail pmEventPaymentDetail) {
-
-        if (StringUtils.hasLength(pmEventPaymentDetail.getNomePagatore()) && StringUtils.hasLength(pmEventPaymentDetail.getCodicePagatore())
-                && isValidFiscalCode(pmEventPaymentDetail.getCodicePagatore())) {
-            return UserDetail.builder()
-                    .name(pmEventPaymentDetail.getNomePagatore())
-                    .taxCode(pmEventPaymentDetail.getCodicePagatore())
-                    .build();
+        UserDetail.UserDetailBuilder builder = UserDetail.builder();
+        if (StringUtils.hasLength(pmEventPaymentDetail.getNomePagatore())) {
+            builder.name(pmEventPaymentDetail.getNomePagatore());
         }
-        return null;
+        if (StringUtils.hasLength(pmEventPaymentDetail.getCodicePagatore()) && isValidFiscalCode(pmEventPaymentDetail.getCodicePagatore())) {
+            builder.taxCode(pmEventPaymentDetail.getCodicePagatore());
+        }
+        else {
+            return null;
+        }
+
+        return builder.build();
     }
 
+    @Nullable
     UserDetail getPayer(PMEvent pmEvent) {
-        UserDetail userDetail = UserDetail.builder().build();
+        UserDetail.UserDetailBuilder builder = UserDetail.builder();
 
         if (StringUtils.hasLength(pmEvent.getName()) && StringUtils.hasLength(pmEvent.getSurname())) {
             String fullName = String.format("%s %s", pmEvent.getName(), pmEvent.getSurname());
-            userDetail.setName(fullName);
+            builder.name(fullName);
         }
 
         if (StringUtils.hasLength(pmEvent.getUserFiscalCode()) && isValidFiscalCode(pmEvent.getUserFiscalCode())) {
-            userDetail.setTaxCode(pmEvent.getUserFiscalCode());
+            builder.taxCode(pmEvent.getUserFiscalCode());
         }
-        return userDetail;
+        else {
+            return null;
+        }
+
+        return builder.build();
     }
 
     UserDetail getPayee(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail) {
