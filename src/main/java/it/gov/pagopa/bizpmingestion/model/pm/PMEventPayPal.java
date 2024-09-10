@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 public class PMEventPayPal {
-	private Long   pkPayPalId;
-	private String emailPP;
+    private Long pkPayPalId;
+    private String emailPP;
 }
