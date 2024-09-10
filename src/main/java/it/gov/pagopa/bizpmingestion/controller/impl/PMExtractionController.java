@@ -16,8 +16,12 @@ import org.springframework.stereotype.Controller;
 public class PMExtractionController implements IPMExtractionController {
     private static final String LOG_BASE_HEADER_INFO = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
 
+    private final IPMExtractionService pmExtractionService;
+
     @Autowired
-    private IPMExtractionService pmExtractionService;
+    public PMExtractionController(IPMExtractionService pmExtractionService) {
+        this.pmExtractionService = pmExtractionService;
+    }
 
     @Override
     public ResponseEntity<Void> pmDataExtraction(PMExtractionType pmExtractionType,

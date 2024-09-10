@@ -4,7 +4,6 @@ import it.gov.pagopa.bizpmingestion.entity.pm.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

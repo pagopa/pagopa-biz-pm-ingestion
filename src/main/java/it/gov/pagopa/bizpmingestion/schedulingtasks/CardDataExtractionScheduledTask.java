@@ -34,23 +34,22 @@ public class CardDataExtractionScheduledTask {
     private static final String CRON_JOB = "CRON JOB - CardDataExtractionScheduledTasks";
     private static final String METHOD = "dataExtraction";
 
-    @Autowired
     private ModelMapper modelMapper;
-    @Autowired
     private PPTransactionRepository ppTransactionRepository;
-    @Autowired
     private BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
-    @Autowired
     private BizEventsViewCartRepository bizEventsViewCartRepository;
-    @Autowired
     private BizEventsViewUserRepository bizEventsViewUserRepository;
-    @Autowired
     private IPMEventToViewService pmEventToViewService;
 
-    public CardDataExtractionScheduledTask(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository) {
+    @Autowired
+    public CardDataExtractionScheduledTask(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository, BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository, BizEventsViewUserRepository bizEventsViewUserRepository, IPMEventToViewService pmEventToViewService) {
         super();
         this.modelMapper = modelMapper;
         this.ppTransactionRepository = ppTransactionRepository;
+        this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
+        this.bizEventsViewCartRepository = bizEventsViewCartRepository;
+        this.bizEventsViewUserRepository = bizEventsViewUserRepository;
+        this.pmEventToViewService = pmEventToViewService;
     }
 
     @Scheduled(cron = "-")
