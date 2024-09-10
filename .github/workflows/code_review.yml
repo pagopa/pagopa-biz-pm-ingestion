@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_KEY: # TODO
+  PROJECT_KEY: pagopa_pagopa-biz-pm-ingestion
 
 permissions:
   id-token: write
@@ -42,7 +42,7 @@ jobs:
           project_key: ${{env.PROJECT_KEY}}
           java_version: 17
           coverage_exclusions: "**/config/*,**/*Mock*,**/model/**,**/entity/*"
-          cpd_exclusions: "**/models/**,**/entity/*"
+          cpd_exclusions: "**/model/**,**/entity/*"
 
   smoke-test:
     name: Smoke Test

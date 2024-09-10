@@ -1,27 +1,25 @@
-#
-# Build
-#
-FROM maven:3.8.4-jdk-11-slim@sha256:04f8e5ba4a6a74fb7f97940bc75ac7340520728d2fb051ecc5c9ecbb9ba28b48 as buildtime
+FROM maven:3.9.3-amazoncorretto-17@sha256:4ab7db7bd5f95e58b0ba1346ff29d6abdd9b73e5fd89c5140edead8b037386ff AS buildtime
+
 WORKDIR /build
 COPY . .
-RUN mvn clean package
+
+RUN mvn clean package -DskipTests
 
 
-FROM adoptopenjdk/openjdk11:alpine-jre@sha256:7bad1492ecbbf775a7105f5cba2e4fa2fe81f95a21a3ac74c9e7af5513c48ba2 as builder
-COPY --from=buildtime /build/target/*.jar application.jar
-RUN java -Djarmode=layertools -jar application.jar extract
 
+FROM amazoncorretto:17.0.8-alpine3.18@sha256:0c61f12abfb091be48474e836e6802ff3a93e8e038e0460af8c7f447ccbd3901 AS runtime
 
-FROM ghcr.io/pagopa/docker-base-springboot-openjdk11:v1.0.1@sha256:bbbe948e91efa0a3e66d8f308047ec255f64898e7f9250bdb63985efd3a95dbf
-ADD --chown=spring:spring https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.25.1/opentelemetry-javaagent.jar .
+VOLUME /tmp
+WORKDIR /app
 
-COPY --chown=spring:spring  --from=builder dependencies/ ./
-COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
-# https://github.com/moby/moby/issues/37965#issuecomment-426853382
-RUN true
-COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
-COPY --chown=spring:spring  --from=builder application/ ./
+COPY --from=buildtime /build/target/*.jar /app/app.jar
+# The agent is enabled at runtime via JAVA_TOOL_OPTIONS.
+ADD https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.4.15/applicationinsights-agent-3.4.15.jar /app/applicationinsights-agent.jar
+
+RUN chown -R nobody:nobody /app
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-javaagent:opentelemetry-javaagent.jar","--enable-preview","org.springframework.boot.loader.JarLauncher"]
+# USER 65534
+
+ENTRYPOINT [ "java","-jar","/app/app.jar" ]

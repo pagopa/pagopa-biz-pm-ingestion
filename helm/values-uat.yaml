@@ -1,10 +1,10 @@
 microservice-chart:
-  namespace: "your-namespace" # TODO: set your AKS namespace
+  namespace: "bizevents"
   nameOverride: ""
-  fullnameOverride: ""
+  fullnameOverride: "pagopa-biz-pm-ingestion"
   image:
-    repository: ghcr.io/pagopa/yourname # TODO
-    tag: "0.0.0"
+    repository: ghcr.io/pagopa/pagopa-biz-pm-ingestion
+    tag: "0.0.1-11-PAGOPA-1647-pm-ingestion"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -29,14 +29,14 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "your.host" # TODO: set the host
-    path: /your-path-here/(.*) # TODO: set your path
+    host: "weudev.bizevents.internal.dev.platform.pagopa.it"
+    path: /pagopa-biz-pm-ingestion/(.*)
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: ""
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -66,13 +66,21 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    # TODO: set your name
-    WEBSITE_SITE_NAME: 'yourProjectName' # required to show cloud role name in application insights
+    WEBSITE_SITE_NAME: 'pagopabizpmingestion'
     ENV: 'azure-uat'
-    APP_LOGGING_LEVEL: 'DEBUG'
+    APP_LOGGING_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
-    OTEL_SERVICE_NAME: # TODO
+    COSMOS_DB_URI: 'https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/'
+    COSMOS_DB_NAME: 'db'
+    COSMOS_DB_CONTAINER_NAME: 'biz-events'
+    COSMOS_DB_VIEW_USER_CONTAINER_NAME: 'biz-events-view-user'
+    COSMOS_DB_VIEW_GENERAL_CONTAINER_NAME: 'biz-events-view-general'
+    COSMOS_DB_VIEW_CART_CONTAINER_NAME: 'biz-events-view-cart'
+    COSMOS_QUERY_METRICS: 'false'
+    ORACLE_PM_DB_USER: 'PAGOPA_READER'
+    ORACLE_SCHEMA: 'AGID_USER'
+    OTEL_SERVICE_NAME: 'pagopabizpmingestion'
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_TRACES_EXPORTER: otlp
@@ -83,11 +91,14 @@ microservice-chart:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-u-connection-string'
     OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
+    COSMOS_DB_PRIMARY_KEY: 'cosmos-u-biz-key'
+    ORACLE_PM_DB_URL: 'oracle-pm-db-url'
+    ORACLE_PM_DB_PWD: 'oracle-pm-db-pwd'
   keyvault:
-    name: "pagopa-u-name-kv" #TODO
+    name: "pagopa-u-bizevents-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
-  tolerations: [ ]
+  nodeSelector: {}
+  tolerations: []
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -98,7 +109,7 @@ microservice-chart:
                 values:
                   - user
   canaryDelivery:
-    create: true
+    create: false
     ingress:
       create: true
       canary:
@@ -111,9 +122,8 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: ghcr.io/pagopa/yourname # TODO
+        repository: ghcr.io/pagopa/pagopa-biz-pm-ingestion
         tag: "0.0.0"
         pullPolicy: Always
-      envConfig: { }
-      envSecret: { }
-
+      envConfig: {}
+      envSecret: {}
