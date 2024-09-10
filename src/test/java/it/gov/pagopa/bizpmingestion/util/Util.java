@@ -55,6 +55,7 @@ public class Util {
                 .id(77777L)
                 .emailPP("emailPP")
                 .fkWallet(44444L)
+                .isDefault(1)
                 .build();
 
         PPWallet wallet = PPWallet.builder()
