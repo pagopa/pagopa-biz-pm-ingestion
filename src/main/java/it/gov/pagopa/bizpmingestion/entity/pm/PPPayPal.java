@@ -20,7 +20,7 @@ public class PPPayPal {
     private String emailPP;
 
     @Column(name = "IS_DEFAULT", nullable = false)
-    private Byte isDefault;
+    private Integer isDefault;
 
     @Column(name = "FK_WALLET", nullable = false)
     private Long fkWallet;

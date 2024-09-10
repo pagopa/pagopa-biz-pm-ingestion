@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -81,13 +82,15 @@ public class PMExtractionService implements IPMExtractionService {
                 + "Setted Filters: dateFrom=" + CommonUtility.sanitize(dateFrom) + ", dateFrom=" + CommonUtility.sanitize(dateTo) + ", taxCodes=" + CommonUtility.sanitize(taxCodes.toString())));
         for (PPTransaction ppTransaction : ppTrList) {
             PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
-            for (PMEventPaymentDetail pmEventPaymentDetail : pmEvent.getPaymentDetailList()) {
-                PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
-                if (result != null) {
-                    bizEventsViewGeneralRepository.save(result.getGeneralView());
-                    bizEventsViewCartRepository.save(result.getCartView());
-                    bizEventsViewUserRepository.saveAll(result.getUserViewList());
-                }
+            PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
+                    .stream()
+                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
+                    .orElseThrow();
+            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+            if (result != null) {
+                bizEventsViewGeneralRepository.save(result.getGeneralView());
+                bizEventsViewCartRepository.save(result.getCartView());
+                bizEventsViewUserRepository.saveAll(result.getUserViewList());
             }
         }
         log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));

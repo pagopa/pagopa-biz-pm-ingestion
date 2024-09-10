@@ -177,8 +177,11 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                         WalletInfo.builder()
                                 .brand(pmEvent.getVposCircuitCode())
                                 .blurredNumber(pmEvent.getCardNumber())
-                                //TODO chiedere conferma sul comporamento per valorizzare questo campo
-                                .maskedEmail(CollectionUtils.isEmpty(pmEvent.getPayPalList()) ? "" : pmEvent.getPayPalList().get(0).getEmailPP())
+                                .maskedEmail(CollectionUtils.isEmpty(pmEvent.getPayPalList()) ? "" : pmEvent.getPayPalList().stream()
+                                        .filter(elem -> elem.getIsDefault() == 1)
+                                        .findFirst()
+                                        .orElseThrow()
+                                        .getEmailPP())
                                 .build())
                 .payer(payer)
                 .fee(currencyFormat(String.valueOf(pmEvent.getFee() / 100.00)))

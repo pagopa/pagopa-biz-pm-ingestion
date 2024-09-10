@@ -34,8 +34,11 @@
           "required" : true
         },
         "responses" : {
-          "422" : {
-            "description" : "Unprocessable entity.",
+          "401" : {
+            "description" : "Wrong or missing function key."
+          },
+          "500" : {
+            "description" : "Service unavailable.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -44,8 +47,8 @@
               }
             }
           },
-          "500" : {
-            "description" : "Service unavailable.",
+          "400" : {
+            "description" : "Malformed request.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -64,11 +67,8 @@
               }
             }
           },
-          "401" : {
-            "description" : "Wrong or missing function key."
-          },
-          "400" : {
-            "description" : "Malformed request.",
+          "422" : {
+            "description" : "Unprocessable entity.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -111,12 +111,16 @@
             }
           },
           "creationDateFrom" : {
+            "pattern" : "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$\n",
             "type" : "string",
-            "description" : "if provided use the format yyyy-MM-dd"
+            "description" : "if provided use the format yyyy-MM-dd",
+            "format" : "date"
           },
           "creationDateTo" : {
+            "pattern" : "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$\n",
             "type" : "string",
-            "description" : "if provided use the format yyyy-MM-dd"
+            "description" : "if provided use the format yyyy-MM-dd",
+            "format" : "date"
           }
         }
       },

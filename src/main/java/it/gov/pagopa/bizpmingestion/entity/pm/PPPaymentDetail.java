@@ -29,6 +29,8 @@ public class PPPaymentDetail {
     private String codicePagatore;
     @Column(name = "NOME_PAGATORE")
     private String nomePagatore;
+    @Column(name = "IMPORTO")
+    private Long importo;
 
 
     @ManyToOne(targetEntity = PPPayment.class, fetch = FetchType.LAZY)

@@ -48,8 +48,6 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                 .paymentDetailList(this.getPMPaymentDetailList(ppTransaction.getPpPayment().getPpPaymentDetail()))
                 .vposCircuitCode(this.getVposCircuitCode(Optional.ofNullable(ppTransaction.getPpWallet().getPpCreditCard()).map(PPCreditCard::getVposCircuitCode).orElse("")))
                 .cardNumber(Optional.ofNullable(ppTransaction.getPpWallet().getPpCreditCard()).map(PPCreditCard::getCardNumber).orElse(""))
-                // TODO A cosa serve questa informazione? Non la utilizziamo da nessuna parte
-                //.cellphoneNumber(Optional.ofNullable(ppTransaction.getPpWallet().getPpBPay()).map(PPBPay::getCellphoneNumber).orElse(""))
                 .payPalList(this.getPMPayPalList(ppTransaction.getPpWallet().getPpPayPal()))
                 .build();
     }
@@ -99,6 +97,7 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                             .idDomino(ppd.getIdDominio())
                             .codicePagatore(ppd.getCodicePagatore())
                             .nomePagatore(ppd.getNomePagatore())
+                            .importo(ppd.getImporto())
                             .build()
             );
         }
@@ -113,6 +112,7 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                     PMEventPayPal.builder()
                             .pkPayPalId(pp.getId())
                             .emailPP(pp.getEmailPP())
+                            .isDefault(pp.getIsDefault())
                             .build()
             );
         }

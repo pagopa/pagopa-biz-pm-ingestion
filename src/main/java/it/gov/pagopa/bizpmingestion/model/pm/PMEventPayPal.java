@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class PMEventPayPal {
     private Long pkPayPalId;
     private String emailPP;
+    private Integer isDefault;
 }

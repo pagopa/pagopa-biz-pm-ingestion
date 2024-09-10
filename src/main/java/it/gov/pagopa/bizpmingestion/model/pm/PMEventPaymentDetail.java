@@ -17,4 +17,5 @@ public class PMEventPaymentDetail {
     private String idDomino;
     private String codicePagatore;
     private String nomePagatore;
+    private Long importo;
 }
