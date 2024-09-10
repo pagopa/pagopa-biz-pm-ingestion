@@ -179,7 +179,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                                 .blurredNumber(pmEvent.getCardNumber())
                                 .maskedEmail(CollectionUtils.isEmpty(pmEvent.getPayPalList()) ? "" : pmEvent.getPayPalList().stream()
                                         .filter(elem -> elem.getIsDefault() == 1)
-                                        .findFirst()
+                                        .findAny()
                                         .orElseThrow()
                                         .getEmailPP())
                                 .build())
