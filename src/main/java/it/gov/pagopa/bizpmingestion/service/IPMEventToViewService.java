@@ -10,7 +10,6 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * Service that map a {@link PMEvent} to its view:
