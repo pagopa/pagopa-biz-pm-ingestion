@@ -19,12 +19,12 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
  */
 public interface IPMEventToViewService {
 
-	/**
-	 * Map the provided biz-event to its views
-	 *
-	 * @param bizEvent the event to process
-	 * @return a {@link PMEventToViewResult} that hold the biz-event views
-	 * @throws AppException
-	 */
-	PMEventToViewResult mapPMEventToView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException;
+    /**
+     * Map the provided biz-event to its views
+     *
+     * @param bizEvent the event to process
+     * @return a {@link PMEventToViewResult} that hold the biz-event views
+     * @throws AppException
+     */
+    PMEventToViewResult mapPMEventToView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException;
 }
