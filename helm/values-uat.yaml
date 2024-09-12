@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-biz-pm-ingestion"
   image:
     repository: ghcr.io/pagopa/pagopa-biz-pm-ingestion
-    tag: "1.0.1"
+    tag: "1.0.2"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -80,6 +80,7 @@ microservice-chart:
     COSMOS_QUERY_METRICS: 'false'
     ORACLE_PM_DB_USER: 'PAGOPA_READER'
     ORACLE_SCHEMA: 'AGID_USER'
+    VALID_CHANNELS: 'CITTADINANZA_DIGITALE,IO_PAY'
     OTEL_SERVICE_NAME: 'pagopabizpmingestion'
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
