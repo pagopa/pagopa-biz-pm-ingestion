@@ -1,13 +1,27 @@
-# Template for Java Spring Microservice project
+# PM Ingestion for Biz Events
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TODO-set-your-id&metric=alert_status)](https://sonarcloud.io/dashboard?id=TODO-set-your-id)
-[![Integration Tests](https://github.com/pagopa/<TODO-repo>/actions/workflows/integration_test.yml/badge.svg?branch=main)](https://github.com/pagopa/<TODO-repo>/actions/workflows/integration_test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa-pagopa-biz-pm-ingestion&metric=alert_status)](https://sonarcloud.io/dashboard?id=pagopa-pagopa-biz-pm-ingestion)
+[![Integration Tests](https://github.com/pagopa/pagopa-biz-pm-ingestion/actions/workflows/integration_test.yml/badge.svg?branch=main)](https://github.com/pagopa/pagopa-biz-pm-ingestion/actions/workflows/integration_test.yml)
 
-TODO: add a description
+Micro-Service to ingest transaction from PM to BIZ Events
 
-TODO: generate a index with this tool: https://ecotrust-canada.github.io/markdown-toc/
+- [PM Ingestion for Biz Events](#pm-ingestion-for-biz-events)
+    * [Api Documentation 📖](#api-documentation---)
+    * [Technology Stack](#technology-stack)
+    * [Start Project Locally 🚀](#start-project-locally---)
+        + [Prerequisites](#prerequisites)
+        + [Run docker container](#run-docker-container)
+    * [Develop Locally 💻](#develop-locally---)
+        + [Prerequisites](#prerequisites-1)
+        + [Run the project](#run-the-project)
+        + [Spring Profiles](#spring-profiles)
+        + [Testing 🧪](#testing---)
+            - [Unit testing](#unit-testing)
+            - [Integration testing](#integration-testing)
+            - [Performance testing](#performance-testing)
+    * [Contributors 👥](#contributors---)
+        + [Maintainers](#maintainers)
 
-TODO: resolve all the TODOs in this template
 
 ---
 
@@ -19,13 +33,11 @@ See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubuserc
 
 ## Technology Stack
 
-- Java 11
+- Java 17
 - Spring Boot
 - Spring Web
 - Hibernate
 - JPA
-- ...
-- TODO
 
 ---
 
