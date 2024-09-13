@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Validated
 public interface IPMExtractionController {
 
-    @Operation(summary = "Request for data extraction from the PM.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "pmDataExtraction")
+    @Operation(summary = "Request for data extraction from the PM.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "ApiKey")}, operationId = "pmDataExtraction")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Request paid."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),

@@ -1,13 +1,33 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "OpenAPI definition",
-    "version": "1.0.2"
+    "title": "bizpmingestion",
+    "description": "Microservice for retrieving payment receipts from the PM.",
+    "termsOfService": "https://www.pagopa.gov.it/",
+    "version": "1.0.2-5-fix-deploy"
   },
   "servers": [
     {
-      "url": "http://localhost",
-      "description": "Generated server url"
+      "url": "http://localhost:8080"
+    },
+    {
+      "url": "https://{host}{basePath}",
+      "variables": {
+        "host": {
+          "default": "api.dev.platform.pagopa.it",
+          "enum": [
+            "api.dev.platform.pagopa.it",
+            "api.uat.platform.pagopa.it",
+            "api.platform.pagopa.it"
+          ]
+        },
+        "basePath": {
+          "default": "/pm-ingestion/v1",
+          "enum": [
+            "/pm-ingestion/v1"
+          ]
+        }
+      }
     }
   ],
   "paths": {
@@ -44,8 +64,8 @@
           "required": true
         },
         "responses": {
-          "404": {
-            "description": "Not found.",
+          "409": {
+            "description": "Conflict.",
             "content": {
               "application/json": {
                 "schema": {
@@ -64,6 +84,29 @@
               }
             }
           },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Request paid."
+          },
           "400": {
             "description": "Malformed request.",
             "content": {
@@ -76,37 +119,11 @@
           },
           "401": {
             "description": "Wrong or missing function key."
-          },
-          "200": {
-            "description": "Request paid."
-          },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
           }
         },
         "security": [
           {
             "ApiKey": []
-          },
-          {
-            "Authorization": []
           }
         ]
       }
@@ -158,6 +175,14 @@
             "example": "There was an error processing the request"
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "The API key to access this function app.",
+        "name": "Ocp-Apim-Subscription-Key",
+        "in": "header"
       }
     }
   }
