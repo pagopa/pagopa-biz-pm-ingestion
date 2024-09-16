@@ -71,7 +71,7 @@ microservice-chart:
     APP_LOGGING_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
-    COSMOS_DB_URI: 'https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/'
+    COSMOS_DB_URI: 'https://pagopa-p-weu-bizevents-ds-cosmos-account.documents.azure.com:443/'
     COSMOS_DB_NAME: 'db'
     COSMOS_DB_CONTAINER_NAME: 'biz-events'
     COSMOS_DB_VIEW_USER_CONTAINER_NAME: 'biz-events-view-user'
