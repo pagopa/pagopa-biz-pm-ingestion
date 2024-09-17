@@ -6,10 +6,10 @@ tags = {
   CreatedBy   = "Terraform"
   Environment = "Uat"
   Owner       = "pagoPA"
-  Source      = "https://github.com/pagopa/your-repository" # TODO
+  Source      = "https://github.com/pagopa/pagopa-biz-pm-ingestion"
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
 }
 
 apim_dns_zone_prefix               = "uat.platform"
 external_domain                    = "pagopa.it"
-hostname = "weuuat.<domain>.internal.uat.platform.pagopa.it" # TODO
+hostname = "weuuat.bizevents.internal.uat.platform.pagopa.it"

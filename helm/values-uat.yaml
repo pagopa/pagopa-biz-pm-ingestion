@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-biz-pm-ingestion"
   image:
     repository: ghcr.io/pagopa/pagopa-biz-pm-ingestion
-    tag: "1.0.3"
+    tag: "1.0.3-2-fix-deploy"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -71,14 +71,14 @@ microservice-chart:
     APP_LOGGING_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
-    COSMOS_DB_URI: 'https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/'
+    COSMOS_DB_URI: 'https://pagopa-u-weu-bizevents-ds-cosmos-account.documents.azure.com:443/'
     COSMOS_DB_NAME: 'db'
     COSMOS_DB_CONTAINER_NAME: 'biz-events'
     COSMOS_DB_VIEW_USER_CONTAINER_NAME: 'biz-events-view-user'
     COSMOS_DB_VIEW_GENERAL_CONTAINER_NAME: 'biz-events-view-general'
     COSMOS_DB_VIEW_CART_CONTAINER_NAME: 'biz-events-view-cart'
     COSMOS_QUERY_METRICS: 'false'
-    ORACLE_PM_DB_USER: 'AGID_USER'
+    ORACLE_PM_DB_USER: 'PAGOPA_READ_INT_SV' #'AGID_USER'
     ORACLE_SCHEMA: 'AGID_USER'
     OTEL_SERVICE_NAME: 'pagopabizpmingestion'
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
