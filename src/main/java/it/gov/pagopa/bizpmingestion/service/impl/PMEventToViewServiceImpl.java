@@ -195,7 +195,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
 
         LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate(), formatter);
         
-        boolean isHidden = !isDebtor && !(isPayer && this.isValidChannelOrigin(pmEvent));
+        boolean isHidden = !isDebtor && !(isPayer && this.isValidOriginChannel(pmEvent));
 
         return BizEventsViewUser.builder()
                 .id("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear() + (isPayer ? "-p" : "-d"))
@@ -208,7 +208,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                 .build();
     }
     
-    private boolean isValidChannelOrigin(PMEvent pmEvent) {
+    private boolean isValidOriginChannel(PMEvent pmEvent) {
     	
     	boolean isValid = false;
         
