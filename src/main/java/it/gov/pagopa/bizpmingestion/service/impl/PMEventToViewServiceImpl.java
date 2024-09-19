@@ -22,6 +22,7 @@ import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -38,6 +39,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
     private static final String REF_TYPE_IUV = "IUV";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     private static final String REMITTANCE_INFORMATION_REGEX = "/TXT/(.*)";
+    private final List<String> validChannels = Arrays.asList(System.getenv().getOrDefault("VALID_CHANNELS", "CITTADINANZA_DIGITALE,IO_PAY").split(","));
 
 
     /**
@@ -192,16 +194,29 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
     private BizEventsViewUser buildUserView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, UserDetail userDetail, boolean isPayer, boolean isDebtor) {
 
         LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate(), formatter);
+        
+        boolean isHidden = !isDebtor && !(isPayer && this.isValidOriginChannel(pmEvent));
 
         return BizEventsViewUser.builder()
                 .id("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear() + (isPayer ? "-p" : "-d"))
                 .transactionId("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .taxCode(userDetail.getTaxCode())
                 .transactionDate(pmEvent.getCreationDate())
-                .hidden(false)
+                .hidden(isHidden)
                 .isPayer(isPayer)
                 .isDebtor(isDebtor)
                 .build();
+    }
+    
+    private boolean isValidOriginChannel(PMEvent pmEvent) {
+    	
+    	boolean isValid = false;
+        
+    	if (StringUtils.hasText(pmEvent.getOrigin()) && validChannels.contains(pmEvent.getOrigin().toUpperCase())) {
+        	isValid = true; 
+        }
+        
+        return isValid;
     }
 
     private boolean isValidFiscalCode(String taxCode) {

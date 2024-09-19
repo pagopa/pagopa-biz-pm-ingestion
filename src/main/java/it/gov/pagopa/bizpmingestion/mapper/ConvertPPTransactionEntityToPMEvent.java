@@ -43,6 +43,7 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                 .receiver(ppTransaction.getPpPayment().getReceiver())
                 .subject(ppTransaction.getPpPayment().getSubject())
                 .idCarrello(ppTransaction.getPpPayment().getIdCarrello())
+                .origin(ppTransaction.getPpPayment().getOrigin())
                 .idPayment(ppTransaction.getPpPayment().getIdPayment())
                 .businessName(ppTransaction.getPpPsp().getBusinessName())
                 .paymentDetailList(this.getPMPaymentDetailList(ppTransaction.getPpPayment().getPpPaymentDetail()))
