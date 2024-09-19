@@ -12,7 +12,7 @@
 
 	<groupId>it.gov.pagopa</groupId>
 	<artifactId>bizpmingestion</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<name>Biz PM Ingestion</name>
 	<description>Microservice for retrieving payment receipts from the PM.</description>
 
@@ -21,6 +21,7 @@
 		<azure.functions.java.library.version>3.1.0</azure.functions.java.library.version>
 		<cosmos-data-version>5.14.0</cosmos-data-version>
 		<springdoc-openapi-ui-version>2.6.0</springdoc-openapi-ui-version>
+		<elasticsearch.version>1.6.0</elasticsearch.version>
 	</properties>
 
 	<dependencies>
@@ -78,8 +79,12 @@
 		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>6.5.2.Final</version>
 		</dependency>
+		<dependency>
+            <groupId>co.elastic.logging</groupId>
+            <artifactId>logback-ecs-encoder</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
 		<!-- Oracle -->
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
