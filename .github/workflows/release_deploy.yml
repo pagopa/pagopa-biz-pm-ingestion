@@ -130,7 +130,7 @@ jobs:
     uses: ./.github/workflows/deploy_with_github_runner.yml
     with:
       environment: ${{ matrix.environment }}
-      target: ${{ needs.setup.outputs.environment }}
+      # target: ${{ needs.setup.outputs.environment }}
     secrets: inherit
 
   notify:
