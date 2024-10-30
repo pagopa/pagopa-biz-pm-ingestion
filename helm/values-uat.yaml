@@ -29,7 +29,7 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "weudev.bizevents.internal.dev.platform.pagopa.it"
+    host: "weuuat.bizevents.internal.uat.platform.pagopa.it"
     path: /pagopa-biz-pm-ingestion/(.*)
     servicePort: 8080
   serviceAccount:
