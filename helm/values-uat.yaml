@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-biz-pm-ingestion"
   image:
     repository: ghcr.io/pagopa/pagopa-biz-pm-ingestion
-    tag: "1.0.7"
+    tag: "1.0.7-1-PAGOPA-2276-deploy-DEV-UAT"
     pullPolicy: Always
   livenessProbe:
     httpGet:
