@@ -78,22 +78,33 @@ public class PMExtractionService implements IPMExtractionService {
         };
 
         List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
-        log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Found n. " + ppTrList.size() + " transactions to save on Cosmos DB."
-                + "Setted Filters: dateFrom=" + CommonUtility.sanitize(dateFrom) + ", dateFrom=" + CommonUtility.sanitize(dateTo) + ", taxCodes=" + CommonUtility.sanitize(taxCodes.toString())));
+        log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Found n. " + ppTrList.size() 
+                + " transactions to save on Cosmos DB."
+        		+ " Setted Filters: dateFrom=" + CommonUtility.sanitize(dateFrom) + ", dateFrom=" + CommonUtility.sanitize(dateTo) + ", taxCodes=" + CommonUtility.sanitize(taxCodes.toString()) + "."
+        		+ " Started at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+        int importedEventsCounter = 0;
         for (PPTransaction ppTransaction : ppTrList) {
-            PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
-            PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
-                    .stream()
-                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                    .orElseThrow();
-            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
-            if (result != null) {
-                bizEventsViewGeneralRepository.save(result.getGeneralView());
-                bizEventsViewCartRepository.save(result.getCartView());
-                bizEventsViewUserRepository.saveAll(result.getUserViewList());
-            }
+        	try {
+	            PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
+	            PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
+	                    .stream()
+	                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
+	                    .orElseThrow();
+	            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+	            if (result != null) {
+	                bizEventsViewGeneralRepository.save(result.getGeneralView());
+	                bizEventsViewCartRepository.save(result.getCartView());
+	                bizEventsViewUserRepository.saveAll(result.getUserViewList());
+	                importedEventsCounter ++;
+	            }
+        	} catch (Exception e) {
+        		log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + ppTransaction.getId() 
+        				+ " (err desc = " + e.getMessage() +")"));
+        	}
         }
-        log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+        log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Imported n. " + importedEventsCounter 
+        		+" events out of a total of " + ppTrList.size() +"."
+        		+" Finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
     }
 
 }
