@@ -5,11 +5,10 @@ import it.gov.pagopa.bizpmingestion.entity.pm.*;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
 
 public class Util {
 
-    public static List<PPTransaction> getPPTransactionListForTest() {
+    public static PPTransaction getPPTransactionListForTest() {
 
         PPUser user = PPUser.builder()
                 .id(11111L)
@@ -74,7 +73,7 @@ public class Util {
                 .businessName("businessName")
                 .build();
 
-        PPTransaction ppTransaction = PPTransaction.builder()
+        return PPTransaction.builder()
                 .id(12345L)
                 .rrn("rrn")
                 .numAut("numAut")
@@ -94,8 +93,6 @@ public class Util {
                 .ppWallet(wallet)
                 .ppPsp(ppPsp)
                 .build();
-
-        return Collections.singletonList(ppTransaction);
     }
 
 }
