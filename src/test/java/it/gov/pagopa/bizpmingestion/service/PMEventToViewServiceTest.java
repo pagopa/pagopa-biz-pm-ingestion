@@ -26,7 +26,7 @@ class PMEventToViewServiceTest {
 
 	@Test
 	void mapPMEventToView_not_valid_origin_channel() {
-		PPTransaction ppTransaction = Util.getPPTransactionListForTest().get(0);
+		PPTransaction ppTransaction = Util.getPPTransactionListForTest();
 		ppTransaction.getPpPayment().setOrigin("not valid origin value");
 		PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
 		PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
@@ -40,7 +40,7 @@ class PMEventToViewServiceTest {
 	
 	@Test
 	void mapPMEventToView_valid_origin_channel() {
-		PPTransaction ppTransaction = Util.getPPTransactionListForTest().get(0);
+		PPTransaction ppTransaction = Util.getPPTransactionListForTest();
 		ppTransaction.getPpPayment().setOrigin("CITTADINANZA_DIGITALE");
 		PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
 		PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
