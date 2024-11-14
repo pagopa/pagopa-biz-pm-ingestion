@@ -75,19 +75,19 @@ public class PPTransaction {
     private Long fkPsp;
 
 
-    @ManyToOne(targetEntity = PPUser.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = PPUser.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "FK_USER", referencedColumnName = "ID_USER", insertable = false, updatable = false)
     private PPUser ppUser;
 
-    @OneToOne(targetEntity = PPPayment.class, fetch = FetchType.LAZY)
+    @OneToOne(targetEntity = PPPayment.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "FK_PAYMENT", referencedColumnName = "ID", insertable = false, updatable = false)
     private PPPayment ppPayment;
 
-    @OneToOne(targetEntity = PPWallet.class, fetch = FetchType.LAZY)
+    @OneToOne(targetEntity = PPWallet.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "FK_WALLET", referencedColumnName = "ID_WALLET", insertable = false, updatable = false)
     private PPWallet ppWallet;
 
-    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.LAZY)
+    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
     private PPPsp ppPsp;
 

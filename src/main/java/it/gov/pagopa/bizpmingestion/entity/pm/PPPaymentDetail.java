@@ -33,7 +33,7 @@ public class PPPaymentDetail {
     private Long importo;
 
 
-    @ManyToOne(targetEntity = PPPayment.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = PPPayment.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "PAYMENT_ID", referencedColumnName = "ID", insertable = false, updatable = false)
     private PPPayment ppPayment;
 }

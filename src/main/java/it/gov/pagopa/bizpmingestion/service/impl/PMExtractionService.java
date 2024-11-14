@@ -23,6 +23,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,15 +45,17 @@ public class PMExtractionService implements IPMExtractionService {
     private final BizEventsViewCartRepository bizEventsViewCartRepository;
     private final BizEventsViewUserRepository bizEventsViewUserRepository;
     private final IPMEventToViewService pmEventToViewService;
+    private final TransactionService transactionService;
 
     @Autowired
-    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository, BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository, BizEventsViewUserRepository bizEventsViewUserRepository, IPMEventToViewService pmEventToViewService) {
+    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository, BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository, BizEventsViewUserRepository bizEventsViewUserRepository, IPMEventToViewService pmEventToViewService, TransactionService transactionService) {
         this.modelMapper = modelMapper;
         this.ppTransactionRepository = ppTransactionRepository;
         this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
         this.bizEventsViewCartRepository = bizEventsViewCartRepository;
         this.bizEventsViewUserRepository = bizEventsViewUserRepository;
         this.pmEventToViewService = pmEventToViewService;
+        this.transactionService = transactionService;
     }
 
 
@@ -86,19 +89,7 @@ public class PMExtractionService implements IPMExtractionService {
         int importedEventsCounter = ppTrList.parallelStream()
                 .map(ppTransaction -> {
                     try {
-                        PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
-                        PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
-                                .stream()
-                                .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                                .orElseThrow();
-                        PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
-                        if (result != null) {
-                            bizEventsViewGeneralRepository.save(result.getGeneralView());
-                            bizEventsViewCartRepository.save(result.getCartView());
-                            bizEventsViewUserRepository.saveAll(result.getUserViewList());
-                            return 1;
-                        }
-                        return 0;
+                        return transactionService.elaboration(ppTransaction, paymentMethodType);
                     } catch (Exception e) {
                         log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + ppTransaction.getId()
                                 + " (err desc = " + e.getMessage() + ")"));

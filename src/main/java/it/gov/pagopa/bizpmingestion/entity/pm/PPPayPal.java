@@ -25,7 +25,7 @@ public class PPPayPal {
     @Column(name = "FK_WALLET", nullable = false)
     private Long fkWallet;
 
-    @ManyToOne(targetEntity = PPWallet.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = PPWallet.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "FK_WALLET", referencedColumnName = "ID_WALLET", insertable = false, updatable = false)
     private PPWallet ppWallet;
 }
