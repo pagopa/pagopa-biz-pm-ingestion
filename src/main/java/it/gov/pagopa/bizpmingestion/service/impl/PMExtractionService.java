@@ -18,6 +18,7 @@ import it.gov.pagopa.bizpmingestion.specification.BPayExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.CardExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.PayPalExtractionSpec;
 import it.gov.pagopa.bizpmingestion.util.CommonUtility;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -92,19 +94,39 @@ public class PMExtractionService implements IPMExtractionService {
                 .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
                 .toList();
 
+        long startTime = System.currentTimeMillis();
+
         int importedEventsCounter = pmEventList.parallelStream()
                 .map(pmEvent -> {
                     try {
-                        return transactionService.elaboration(pmEvent, paymentMethodType);
+                        PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
+                                .stream()
+                                .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
+                                .orElseThrow();
+                        log.info("trace[max] {}", System.currentTimeMillis() - startTime);
+                        PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+                        log.info("trace[mapping] {}", System.currentTimeMillis() - startTime);
+                        if (result != null) {
+                            bizEventsViewGeneralRepository.save(result.getGeneralView());
+                            log.info("trace[save general] {}", System.currentTimeMillis() - startTime);
+                            
+                            bizEventsViewCartRepository.save(result.getCartView());
+                            log.info("trace[save cart] {}", System.currentTimeMillis() - startTime);
+                            
+                            bizEventsViewUserRepository.saveAll(result.getUserViewList());
+                            log.info("trace[save user] {}", System.currentTimeMillis() - startTime);
+                            return 1;
+                        }
+                        return 0;
                     } catch (Exception e) {
                         log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + pmEvent.getPkTransactionId()
-                                + " (err desc = " + e.getMessage() + ")"));
+                                + " (err desc = " + e.getMessage() + ")"), e);
                         return 0;
                     }
                 })
                 .reduce(Integer::sum)
                 .orElse(-1);
-        log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Imported n. " + importedEventsCounter
+        log.info(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: executed in "+ (System.currentTimeMillis() - startTime) +" Imported n. " + importedEventsCounter
                 + " events out of a total of " + ppTrList.size() + "."
                 + " Finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
     }
