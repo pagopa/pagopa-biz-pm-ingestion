@@ -84,9 +84,9 @@ public class PMExtractionService implements IPMExtractionService {
                 + " Setted Filters: dateFrom=" + CommonUtility.sanitize(dateFrom) + ", dateFrom=" + CommonUtility.sanitize(dateTo) + ", taxCodes=" + CommonUtility.sanitize(taxCodes.toString()) + "."
                 + " Started at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
         int importedEventsCounter = ppTrList.parallelStream()
-                .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
-                .map(pmEvent -> {
+                .map(ppTransaction -> {
                     try {
+                        PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
                         PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
                                 .stream()
                                 .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
@@ -100,7 +100,7 @@ public class PMExtractionService implements IPMExtractionService {
                         }
                         return 0;
                     } catch (Exception e) {
-                        log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + pmEvent.getPkTransactionId()
+                        log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + ppTransaction.getId()
                                 + " (err desc = " + e.getMessage() + ")"));
                         return 0;
                     }
