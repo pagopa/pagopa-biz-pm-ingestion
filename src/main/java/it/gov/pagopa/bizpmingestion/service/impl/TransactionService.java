@@ -36,8 +36,7 @@ public class TransactionService {
 
 
     @Transactional
-    public int elaboration(PPTransaction ppTransaction, PaymentMethodType paymentMethodType) {
-        PMEvent pmEvent = modelMapper.map(ppTransaction, PMEvent.class);
+    public int elaboration(PMEvent pmEvent, PaymentMethodType paymentMethodType) {
         PMEventPaymentDetail pmEventPaymentDetail = pmEvent.getPaymentDetailList()
                 .stream()
                 .max(Comparator.comparing(PMEventPaymentDetail::getImporto))

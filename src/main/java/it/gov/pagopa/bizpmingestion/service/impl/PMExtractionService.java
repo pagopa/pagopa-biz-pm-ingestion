@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -86,12 +87,17 @@ public class PMExtractionService implements IPMExtractionService {
                 + " transactions to save on Cosmos DB."
                 + " Setted Filters: dateFrom=" + CommonUtility.sanitize(dateFrom) + ", dateFrom=" + CommonUtility.sanitize(dateTo) + ", taxCodes=" + CommonUtility.sanitize(taxCodes.toString()) + "."
                 + " Started at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
-        int importedEventsCounter = ppTrList.parallelStream()
-                .map(ppTransaction -> {
+
+        var pmEventList = ppTrList.stream()
+                .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
+                .toList();
+
+        int importedEventsCounter = pmEventList.parallelStream()
+                .map(pmEvent -> {
                     try {
-                        return transactionService.elaboration(ppTransaction, paymentMethodType);
+                        return transactionService.elaboration(pmEvent, paymentMethodType);
                     } catch (Exception e) {
-                        log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + ppTransaction.getId()
+                        log.error(String.format(LOG_BASE_HEADER_INFO, METHOD, CommonUtility.sanitize(pmExtractionType.toString()) + " type data extraction info: Error importing PM event with id=" + pmEvent.getPkTransactionId()
                                 + " (err desc = " + e.getMessage() + ")"));
                         return 0;
                     }
