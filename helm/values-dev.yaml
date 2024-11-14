@@ -10,16 +10,16 @@ microservice-chart:
     httpGet:
       path: /actuator/health/liveness
       port: 8080
-    initialDelaySeconds: 180
+    initialDelaySeconds: 60
     failureThreshold: 6
-    periodSeconds: 30
+    periodSeconds: 10
   readinessProbe:
     httpGet:
       path: /actuator/health/readiness
       port: 8080
-    initialDelaySeconds: 180
+    initialDelaySeconds: 60
     failureThreshold: 6
-    periodSeconds: 30
+    periodSeconds: 10
   deployment:
     create: true
   service:
@@ -69,7 +69,7 @@ microservice-chart:
     ENV: 'dev'
     WEBSITE_SITE_NAME: 'pagopabizpmingestion'
     APP_LOGGING_LEVEL: 'INFO'
-    DEFAULT_LOGGING_LEVEL: 'INFO'
+    DEFAULT_LOGGING_LEVEL: 'WARN'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
     COSMOS_DB_URI: 'https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/'
     COSMOS_DB_NAME: 'db'
