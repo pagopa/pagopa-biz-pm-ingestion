@@ -4,8 +4,10 @@ import it.gov.pagopa.bizpmingestion.enumeration.PMExtractionType;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
 
 public interface IPMExtractionService {
 
-    void pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType);
+	ResponseEntity<Void> pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType);
 }
