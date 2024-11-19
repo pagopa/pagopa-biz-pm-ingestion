@@ -1,15 +1,16 @@
 package it.gov.pagopa.bizpmingestion.service.impl;
 
+import com.microsoft.azure.functions.annotation.ExponentialBackoffRetry;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.BizEventsPMIngestionExecution;
-import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
+import it.gov.pagopa.bizpmingestion.exception.AppError;
+import it.gov.pagopa.bizpmingestion.exception.AppException;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -22,11 +23,10 @@ import java.util.*;
 @EnableAsync
 @Service
 @Slf4j
-public class AyncService {
+public class AsyncService {
 
     private static final String LOG_BASE_HEADER_INFO = "[ClassMethod: %s] - [MethodParamsToLog: %s]";
 
-    private final ModelMapper modelMapper;
     private final BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
     private final BizEventsViewCartRepository bizEventsViewCartRepository;
     private final BizEventsViewUserRepository bizEventsViewUserRepository;
@@ -34,11 +34,9 @@ public class AyncService {
     private final IPMEventToViewService pmEventToViewService;
 
     @Autowired
-    public AyncService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository,
-                       BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository,
-                       BizEventsViewUserRepository bizEventsViewUserRepository, PMIngestionExecutionRepository pmIngestionExecutionRepository,
-                       IPMEventToViewService pmEventToViewService) {
-        this.modelMapper = modelMapper;
+    public AsyncService(BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository,
+                        BizEventsViewUserRepository bizEventsViewUserRepository, PMIngestionExecutionRepository pmIngestionExecutionRepository,
+                        IPMEventToViewService pmEventToViewService) {
         this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
         this.bizEventsViewCartRepository = bizEventsViewCartRepository;
         this.bizEventsViewUserRepository = bizEventsViewUserRepository;
@@ -47,21 +45,14 @@ public class AyncService {
     }
 
     @Async
-    public void processDataAsync(List<PPTransaction> ppTrList, PaymentMethodType paymentMethodType, BizEventsPMIngestionExecution pmIngestionExec) {
+    public void processDataAsync(List<PMEvent> pmEventList, PaymentMethodType paymentMethodType, BizEventsPMIngestionExecution pmIngestionExec) {
 
         try {
-
-            List<Long> skippedId = Collections.synchronizedList(new ArrayList<>());
             pmIngestionExec.setStatus("DONE");
 
-            var pmEventList = ppTrList.stream()
-                    .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
-                    .toList();
-
-            int importedEventsCounter = pmEventList.parallelStream()
+            List<Long> skippedId = pmEventList.parallelStream()
                     .map(pmEvent -> {
                         try {
-
                             PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
                                     .orElse(Collections.emptyList())
                                     .stream()
@@ -70,27 +61,26 @@ public class AyncService {
 
                             PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
                             if (result != null) {
-                                bizEventsViewGeneralRepository.save(result.getGeneralView());
-                                bizEventsViewCartRepository.save(result.getCartView());
-                                bizEventsViewUserRepository.saveAll(result.getUserViewList());
-                                return 1;
+                                saveOnCosmos(result);
+
+                            } else {
+                                log.warn("skipped");
+                                throw new AppException(AppError.INTERNAL_SERVER_ERROR);
                             }
-                            return 0;
+                            return null;
                         } catch (Exception e) {
                             pmIngestionExec.setStatus("DONE WITH SKIP");
-                            skippedId.add(pmEvent.getPkTransactionId());
 
                             log.error(String.format(LOG_BASE_HEADER_INFO, "processDataAsync", "[processId=" + pmIngestionExec.getId() + "] - Error importing PM event with id=" + pmEvent.getPkTransactionId()
                                     + " (err desc = " + e.getMessage() + ")"), e);
-                            return 0;
+                            return pmEvent.getPkTransactionId();
                         }
                     })
-                    .reduce(Integer::sum)
-                    .orElse(-1);
+                    .filter(Objects::nonNull)
+                    .toList();
 
-            pmIngestionExec.setNumRecordIngested(importedEventsCounter);
+            pmIngestionExec.setNumRecordIngested(pmEventList.size() - skippedId.size());
             pmIngestionExec.setSkippedID(skippedId);
-
 
         } catch (Exception e) {
             pmIngestionExec.setStatus("FAILED");
@@ -101,6 +91,13 @@ public class AyncService {
             pmIngestionExecutionRepository.save(pmIngestionExec);
 
         }
+    }
+
+    @ExponentialBackoffRetry(maxRetryCount = 3, maximumInterval = "00:00:30", minimumInterval = "00:00:10")
+    private void saveOnCosmos(PMEventToViewResult result) {
+        bizEventsViewGeneralRepository.save(result.getGeneralView());
+        bizEventsViewCartRepository.save(result.getCartView());
+        bizEventsViewUserRepository.saveAll(result.getUserViewList());
     }
 
 }

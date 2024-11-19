@@ -1,8 +1,14 @@
 package it.gov.pagopa.bizpmingestion.model;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 
 @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExtractionResponse {
-    private Integer element;
+    private Integer elements;
 }

@@ -8,14 +8,7 @@ import it.gov.pagopa.bizpmingestion.exception.AppError;
 import it.gov.pagopa.bizpmingestion.exception.AppException;
 import it.gov.pagopa.bizpmingestion.model.ExtractionResponse;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
-import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
-import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
-import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
-import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
-import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
-import it.gov.pagopa.bizpmingestion.repository.PMIngestionExecutionRepository;
 import it.gov.pagopa.bizpmingestion.repository.PPTransactionRepository;
-import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import it.gov.pagopa.bizpmingestion.service.IPMExtractionService;
 import it.gov.pagopa.bizpmingestion.specification.BPayExtractionSpec;
 import it.gov.pagopa.bizpmingestion.specification.CardExtractionSpec;
@@ -24,20 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 
 @EnableAsync
@@ -49,28 +36,15 @@ public class PMExtractionService implements IPMExtractionService {
 
     private final ModelMapper modelMapper;
     private final PPTransactionRepository ppTransactionRepository;
-    private final BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
-    private final BizEventsViewCartRepository bizEventsViewCartRepository;
-    private final BizEventsViewUserRepository bizEventsViewUserRepository;
-    private final PMIngestionExecutionRepository pmIngestionExecutionRepository;
-    private final IPMEventToViewService pmEventToViewService;
 
     @Autowired
-    AyncService ayncService;
+    AsyncService asyncService;
 
 
     @Autowired
-    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository,
-    		BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository,
-    		BizEventsViewUserRepository bizEventsViewUserRepository, PMIngestionExecutionRepository pmIngestionExecutionRepository,
-    		IPMEventToViewService pmEventToViewService) {
+    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository) {
         this.modelMapper = modelMapper;
         this.ppTransactionRepository = ppTransactionRepository;
-        this.bizEventsViewGeneralRepository = bizEventsViewGeneralRepository;
-        this.bizEventsViewCartRepository = bizEventsViewCartRepository;
-        this.bizEventsViewUserRepository = bizEventsViewUserRepository;
-        this.pmIngestionExecutionRepository = pmIngestionExecutionRepository;
-        this.pmEventToViewService = pmEventToViewService;
     }
 
 
@@ -109,10 +83,14 @@ public class PMExtractionService implements IPMExtractionService {
 
         pmIngestionExec.setNumRecordFound(ppTrList.size());
 
-        ayncService.processDataAsync(ppTrList, paymentMethodType, pmIngestionExec);
+        var pmEventList = ppTrList.stream()
+                .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
+                .toList();
+
+        asyncService.processDataAsync(pmEventList, paymentMethodType, pmIngestionExec);
 
         return ExtractionResponse.builder()
-                .element(ppTrList.size())
+                .elements(ppTrList.size())
                 .build();
     }
 
