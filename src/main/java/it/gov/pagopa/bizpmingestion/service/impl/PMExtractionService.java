@@ -6,6 +6,7 @@ import it.gov.pagopa.bizpmingestion.enumeration.PMExtractionType;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.exception.AppError;
 import it.gov.pagopa.bizpmingestion.exception.AppException;
+import it.gov.pagopa.bizpmingestion.model.ExtractionResponse;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
@@ -53,13 +54,15 @@ public class PMExtractionService implements IPMExtractionService {
     private final BizEventsViewUserRepository bizEventsViewUserRepository;
     private final PMIngestionExecutionRepository pmIngestionExecutionRepository;
     private final IPMEventToViewService pmEventToViewService;
-    
-    private final Object lock = new Object();
-    
+
     @Autowired
-    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository, 
-    		BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository, 
-    		BizEventsViewUserRepository bizEventsViewUserRepository, PMIngestionExecutionRepository pmIngestionExecutionRepository, 
+    AyncService ayncService;
+
+
+    @Autowired
+    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository,
+    		BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository,
+    		BizEventsViewUserRepository bizEventsViewUserRepository, PMIngestionExecutionRepository pmIngestionExecutionRepository,
     		IPMEventToViewService pmEventToViewService) {
         this.modelMapper = modelMapper;
         this.ppTransactionRepository = ppTransactionRepository;
@@ -73,8 +76,8 @@ public class PMExtractionService implements IPMExtractionService {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType) {
-    	
+    public ExtractionResponse pmDataExtraction(String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType) {
+
     	BizEventsPMIngestionExecution pmIngestionExec = BizEventsPMIngestionExecution.builder()
         		.id(UUID.randomUUID().toString())
         		.startTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(LocalDateTime.now()))
@@ -101,78 +104,17 @@ public class PMExtractionService implements IPMExtractionService {
             default -> throw new AppException(AppError.BAD_REQUEST,
                     "Invalid PM extraction type [pmExtractionType=" + pmExtractionType + "]");
         };
-        
+
         List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
-        
+
         pmIngestionExec.setNumRecordFound(ppTrList.size());
-        
-        processDataAsync(ppTrList, paymentMethodType, pmIngestionExec);
-        
-        return ResponseEntity.ok().build();
+
+        ayncService.processDataAsync(ppTrList, paymentMethodType, pmIngestionExec);
+
+        return ExtractionResponse.builder()
+                .element(ppTrList.size())
+                .build();
     }
-    
-    @Async
-    public void processDataAsync(List<PPTransaction> ppTrList, PaymentMethodType paymentMethodType, BizEventsPMIngestionExecution pmIngestionExec) {
-        
-    	try {
-    
-    		List<Long> skippedId = Collections.synchronizedList(new ArrayList<>());
-    		
-    		synchronized (lock) {
-                pmIngestionExec.setStatus("DONE");
-            }
-            
-        	var pmEventList = ppTrList.stream()
-                    .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
-                    .toList();
 
-            int importedEventsCounter = pmEventList.parallelStream()
-                    .map(pmEvent -> {
-                        try {
-                        	
-                        	PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
-                        	        .orElse(Collections.emptyList())
-                        	        .stream()
-                        	        .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                        	        .orElseThrow();
-
-                            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
-                            if (result != null) {
-                                bizEventsViewGeneralRepository.save(result.getGeneralView());
-                                bizEventsViewCartRepository.save(result.getCartView());
-                                bizEventsViewUserRepository.saveAll(result.getUserViewList());
-                                return 1;
-                            }
-                            return 0;
-                        } catch (Exception e) {
-                        	synchronized (lock) {
-                                pmIngestionExec.setStatus("DONE WITH SKIP");
-                                skippedId.add(pmEvent.getPkTransactionId());
-                            }
-                            log.error(String.format(LOG_BASE_HEADER_INFO, "processDataAsync", "[processId="+pmIngestionExec.getId()+"] - Error importing PM event with id=" + pmEvent.getPkTransactionId()
-                                    + " (err desc = " + e.getMessage() + ")"), e);
-                            return 0;
-                        }
-                    })
-                    .reduce(Integer::sum)
-                    .orElse(-1);
-            
-            synchronized (lock) {
-                pmIngestionExec.setNumRecordIngested(importedEventsCounter);
-                pmIngestionExec.setSkippedID(skippedId);
-            }  
-
-        } catch (Exception e) {
-        	synchronized (lock) {
-                pmIngestionExec.setStatus("FAILED");
-            }
-            log.error(String.format(LOG_BASE_HEADER_INFO, "processDataAsync", "[processId="+pmIngestionExec.getId()+"] - Error during asynchronous processing: " + e.getMessage()));
-        } finally {          
-        	synchronized (lock) {
-        		pmIngestionExec.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(LocalDateTime.now()));
-                pmIngestionExecutionRepository.save(pmIngestionExec);
-            }
-        }
-    }
 
 }
