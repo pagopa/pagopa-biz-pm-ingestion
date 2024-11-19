@@ -25,9 +25,16 @@ INTERVAL_SECONDS = 5 * 60  # Configura qui l'intervallo in secondi (5 minuti = 3
 current_date = datetime(2023, 3, 31)  # Data di partenza
 end_date = datetime(2018, 1, 1)  # Data finale
 
+def calculate_interval(elements):
+    """Calcola il tempo di attesa in base al numero di elementi."""
+    return (elements // 20000) * 240  # Ogni 20000 elementi = 4 minuti (240 secondi)
+
+
 def post_requests():
     """Esegue le chiamate POST per ogni tipo di estrazione."""
     creation_date = current_date.strftime("%Y-%m-%d")
+    total_elements = 0
+
     for pm_type in PM_EXTRACTION_TYPES:
         payload = {
             "taxCodes": [],
@@ -37,9 +44,17 @@ def post_requests():
         url = f"{BASE_URL}?pmExtractionType={pm_type}"
         try:
             response = requests.post(url, headers=HEADERS, json=payload)
-            print(f"POST to {url} with payload {payload}: {response.status_code} - {response.text}")
+            if response.status_code == 200:
+                result = response.json()
+                elements = result.get("elements", 0)  # Estrae il numero di elementi
+                total_elements = max(elements, total_elements)
+                print(f"POST to {url} - max elements: {elements}, response: {response.text}")
+            else:
+                print(f"Errore nella richiesta POST per {pm_type}: {response.status_code} - {response.text}")
         except Exception as e:
             print(f"Errore durante la richiesta POST per {pm_type}: {e}")
+
+    return calculate_interval(total_elements)
 
 # Loop principale
 print(f"Avvio dello script. Data iniziale: {current_date.strftime('%Y-%m-%d')}")
