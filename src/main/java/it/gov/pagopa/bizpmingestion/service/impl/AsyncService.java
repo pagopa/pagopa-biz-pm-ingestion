@@ -55,13 +55,13 @@ public class AsyncService {
             List<SkippedTransaction> skippedId = pmEventList.parallelStream()
                     .map(pmEvent -> {
                         try {
-                            PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
-                                    .orElse(Collections.emptyList())
-                                    .stream()
-                                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                                    .orElseThrow(() -> new RuntimeException("importo null. transactionId=" + pmEvent.getPkTransactionId()));
+//                            PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
+//                                    .orElse(Collections.emptyList())
+//                                    .stream()
+//                                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
+//                                    .orElseThrow(() -> new RuntimeException("importo null. transactionId=" + pmEvent.getPkTransactionId()));
 
-                            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+                            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEvent.getPaymentDetailList(), paymentMethodType);
                             if (result != null) {
                                 saveOnCosmos(result);
 

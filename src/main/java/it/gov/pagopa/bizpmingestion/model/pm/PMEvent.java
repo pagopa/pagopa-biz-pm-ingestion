@@ -38,6 +38,7 @@ public class PMEvent {
     private String cardNumber; // only for CARD extraction
     private String vposCircuitCode; // only for CARD extraction
     private String cellphoneNumber; // only for BPAY extraction
-    private List<PMEventPayPal> payPalList; // only for PAYPAL extraction
-    private List<PMEventPaymentDetail> paymentDetailList;
+//    private List<PMEventPayPal> payPalList; // only for PAYPAL extraction
+    private String emailPP;
+    private PMEventPaymentDetail paymentDetailList;
 }
