@@ -156,7 +156,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                 .transactionId("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .eventId(pmEvent.getPkTransactionId().toString())
                 .subject(this.formatRemittanceInformation(pmEvent.getSubject()))
-                .amount(pmEvent.getAmount().toString())
+                .amount(String.valueOf((pmEvent.getAmount().doubleValue()/100)))
                 .debtor(user)
                 .payee(getPayee(pmEvent, pmEventPaymentDetail))
                 .refNumberType(REF_TYPE_IUV)
