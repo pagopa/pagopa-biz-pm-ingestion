@@ -29,7 +29,7 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "weudev.bizevents.internal.dev.platform.pagopa.it"
+    host: "weuprod.bizevents.internal.prod.platform.pagopa.it"
     path: /pagopa-biz-pm-ingestion/(.*)
     servicePort: 8080
   serviceAccount:
@@ -77,6 +77,7 @@ microservice-chart:
     COSMOS_DB_VIEW_USER_CONTAINER_NAME: 'biz-events-view-user'
     COSMOS_DB_VIEW_GENERAL_CONTAINER_NAME: 'biz-events-view-general'
     COSMOS_DB_VIEW_CART_CONTAINER_NAME: 'biz-events-view-cart'
+    COSMOS_DB_PM_INGESTION_STEP_EXEC: 'biz-events-pmingestion-step-execution'
     COSMOS_QUERY_METRICS: 'false'
     ORACLE_PM_DB_USER: 'PAGOPA_READER'
     ORACLE_SCHEMA: 'AGID_USER'

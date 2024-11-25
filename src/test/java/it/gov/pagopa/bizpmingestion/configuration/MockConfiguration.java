@@ -3,6 +3,8 @@ package it.gov.pagopa.bizpmingestion.configuration;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
 import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
+import it.gov.pagopa.bizpmingestion.repository.PMIngestionExecutionRepository;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,5 +28,11 @@ public class MockConfiguration {
     @Primary
     BizEventsViewGeneralRepository bizEventsViewGeneralRepository() {
         return Mockito.mock(BizEventsViewGeneralRepository.class);
+    }
+    
+    @Bean
+    @Primary
+    PMIngestionExecutionRepository pmIngestionExecutionRepository() {
+        return Mockito.mock(PMIngestionExecutionRepository.class);
     }
 }

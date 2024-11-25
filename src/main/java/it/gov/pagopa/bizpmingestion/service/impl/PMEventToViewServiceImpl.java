@@ -172,7 +172,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                 .id("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .transactionId("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .authCode(pmEvent.getNumAut())
-                .rrn(pmEvent.getRrn())
+                .rrn(StringUtils.hasLength(pmEvent.getRrn()) ? pmEvent.getRrn() : "-")
                 .transactionDate(pmEvent.getCreationDate())
                 .pspName(pmEvent.getBusinessName())
                 .walletInfo(
@@ -224,7 +224,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
             Pattern patternCF = Pattern.compile("^[A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$");
             Pattern patternPIVA = Pattern.compile("^\\d{11}");
 
-            return patternCF.matcher(taxCode).find() || patternPIVA.matcher(taxCode).find();
+            return patternCF.matcher(taxCode.toUpperCase()).find() || patternPIVA.matcher(taxCode).find();
         }
         return false;
     }
