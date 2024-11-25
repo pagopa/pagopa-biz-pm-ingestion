@@ -172,7 +172,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                 .id("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .transactionId("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .authCode(pmEvent.getNumAut())
-                .rrn(pmEvent.getRrn())
+                .rrn(StringUtils.hasLength(pmEvent.getRrn()) ? pmEvent.getRrn() : "-")
                 .transactionDate(pmEvent.getCreationDate())
                 .pspName(pmEvent.getBusinessName())
                 .walletInfo(
