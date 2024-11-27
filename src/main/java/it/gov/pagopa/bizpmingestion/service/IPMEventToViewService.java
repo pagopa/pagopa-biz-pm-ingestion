@@ -27,5 +27,5 @@ public interface IPMEventToViewService {
      * @return a {@link PMEventToViewResult} that hold the biz-event views
      * @throws AppException
      */
-    PMEventToViewResult mapPMEventToView(@NotNull PMEvent pmEvent, @NotNull PMEventPaymentDetail pmEventPaymentDetail, PaymentMethodType paymentMethodType) throws AppException;
+    PMEventToViewResult mapPMEventToView(@NotNull PMEvent pmEvent, @NotNull PMEventPaymentDetail pmEventPaymentDetail) throws AppException;
 }

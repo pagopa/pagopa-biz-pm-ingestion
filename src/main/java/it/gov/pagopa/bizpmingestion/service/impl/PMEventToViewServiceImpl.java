@@ -49,8 +49,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
      */
     @Override
     public PMEventToViewResult mapPMEventToView(@NotNull PMEvent pmEvent,
-                                                @NotNull PMEventPaymentDetail pmEventPaymentDetail,
-                                                PaymentMethodType paymentMethodType) throws AppException {
+                                                @NotNull PMEventPaymentDetail pmEventPaymentDetail) throws AppException {
         UserDetail debtor = getDebtor(pmEventPaymentDetail);
         UserDetail payer = getPayer(pmEvent);
 
@@ -90,7 +89,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
 
         PMEventToViewResult result = PMEventToViewResult.builder()
                 .userViewList(userViewToInsert)
-                .generalView(buildGeneralView(pmEvent, pmEventPaymentDetail, payer, paymentMethodType))
+                .generalView(buildGeneralView(pmEvent, pmEventPaymentDetail, payer))
                 .cartView(buildCartView(pmEvent, pmEventPaymentDetail, sameDebtorAndPayer ? payer : debtor))
                 .build();
 
@@ -164,7 +163,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                 .build();
     }
 
-    private BizEventsViewGeneral buildGeneralView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, UserDetail payer, PaymentMethodType paymentMethodType) {
+    private BizEventsViewGeneral buildGeneralView(PMEvent pmEvent, PMEventPaymentDetail pmEventPaymentDetail, UserDetail payer) {
 
         LocalDateTime ldt = LocalDateTime.parse(pmEvent.getCreationDate(), formatter);
 
@@ -183,7 +182,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                                 .build())
                 .payer(payer)
                 .fee(currencyFormat(String.valueOf(pmEvent.getFee() / 100.00)))
-                .paymentMethod(paymentMethodType)
+                .paymentMethod(pmEvent.getMethodType())
                 .origin(OriginType.PM)
                 // i pagamenti provenienti dal PM vengono trattati come non di tipo carrello
                 .totalNotice(1)
