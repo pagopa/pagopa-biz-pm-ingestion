@@ -82,9 +82,14 @@ public class PMExtractionService implements IPMExtractionService {
 
         pmIngestionExec.setNumRecordFound(ppTrList.size());
 
-        var pmEventList = ppTrList.stream()
-                .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
-                .toList();
+        List<PMEvent> pmEventList;
+        try {
+            pmEventList = ppTrList.stream()
+                    .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
+                    .toList();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         asyncService.processDataAsync(pmEventList, getPaymentMethodType(pmExtractionType), pmIngestionExec);
 
