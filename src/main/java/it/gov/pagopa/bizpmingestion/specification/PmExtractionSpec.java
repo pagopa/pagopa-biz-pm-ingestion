@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @NoArgsConstructor
-public class BPayExtractionSpec implements Specification<PPTransaction> {
+public class PmExtractionSpec implements Specification<PPTransaction> {
 
     /**
      *
@@ -26,7 +26,7 @@ public class BPayExtractionSpec implements Specification<PPTransaction> {
     private String creationDateTo;
     private List<String> taxCodes;
 
-    public BPayExtractionSpec(String dateFrom, String dateTo, List<String> taxCodes) {
+    public PmExtractionSpec(String dateFrom, String dateTo, List<String> taxCodes) {
         this.creationDateFrom = dateFrom;
         this.creationDateTo = dateTo;
         this.taxCodes = taxCodes;
@@ -41,12 +41,6 @@ public class BPayExtractionSpec implements Specification<PPTransaction> {
         Predicate predicatePPUserfiscalCode = cb.isTrue(cb.literal(true));
 
         Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
-        Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
-        Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
-        ppWalletJoin.join("ppBPay", JoinType.INNER);
-//        ppWalletJoin.join("ppCreditCard", JoinType.INNER);
-        root.join("ppPsp", JoinType.INNER);
-        ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
 
 
         if (!CollectionUtils.isEmpty(taxCodes)) {
@@ -54,8 +48,6 @@ public class BPayExtractionSpec implements Specification<PPTransaction> {
             predicatePPUserfiscalCode = exp.in(taxCodes);
         }
 
-        cb.isNotNull(ppWalletJoin.get("fkCreditCard"));
-        Predicate predicateBPay = cb.isNotNull(ppWalletJoin.get("fkBPay"));
 
         Expression<Byte> exp = root.get("status");
         Predicate predicateStatus = exp.in(statusFilter);
@@ -83,6 +75,6 @@ public class BPayExtractionSpec implements Specification<PPTransaction> {
         Predicate pAccountStatus = cb.or(predicateAccountingStatusIsNull, predicateAccountingStatus);
         Predicate predicatePPTransactionStatus = cb.and(predicateStatus, pAccountStatus);
 
-        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus, predicateBPay), creationDatePredicate);
+        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus), creationDatePredicate);
     }
 }
