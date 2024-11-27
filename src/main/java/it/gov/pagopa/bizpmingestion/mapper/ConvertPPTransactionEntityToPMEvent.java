@@ -1,6 +1,7 @@
 package it.gov.pagopa.bizpmingestion.mapper;
 
 import it.gov.pagopa.bizpmingestion.entity.pm.*;
+import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPayPal;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
@@ -42,6 +43,7 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                 .name(Optional.ofNullable(ppTransaction.getPpUser())
                         .map(PPUser::getName)
                         .orElse(null))
+                .methodType(getMethodType(ppTransaction))
                 .notificationEmail(Optional.ofNullable(ppTransaction.getPpUser())
                         .map(PPUser::getNotificationEmail)
                         .orElse(null))
@@ -82,6 +84,30 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                         .orElse(Collections.emptyList())))
                 .build();
 
+    }
+
+    private static PaymentMethodType getMethodType(PPTransaction ppTransaction) {
+        if (ppTransaction == null || ppTransaction.getPpWallet() == null || ppTransaction.getPpWallet().getType() == null) {
+            return null;
+        }
+        if (ppTransaction.getPpWallet().getType().intValue() == 1
+                && ppTransaction.getPpWallet().getFkCreditCard() != null) {
+            return PaymentMethodType.CP;
+        }
+        if (ppTransaction.getPpWallet().getType().intValue() == 2
+                && ppTransaction.getPpWallet().getFkCreditCard() != null) {
+            return PaymentMethodType.MYBK;
+        }
+        if (ppTransaction.getPpWallet().getType().intValue() == 3
+                && ppTransaction.getPpWallet().getFkBPay() != null) {
+            return PaymentMethodType.JIF;
+        }
+        if (ppTransaction.getPpWallet().getType().intValue() == 5
+                && ppTransaction.getPpWallet().getPpPayPal() != null
+                && !ppTransaction.getPpWallet().getPpPayPal().isEmpty()) {
+            return PaymentMethodType.PPAL;
+        }
+        return PaymentMethodType.UNKNOWN;
     }
 
     private String getVposCircuitCode(String vposCircuitCode) {

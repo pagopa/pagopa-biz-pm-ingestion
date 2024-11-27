@@ -47,7 +47,7 @@ public class AsyncService {
     }
 
     @Async
-    public void processDataAsync(List<PMEvent> pmEventList, PaymentMethodType paymentMethodType, BizEventsPMIngestionExecution pmIngestionExec) {
+    public void processDataAsync(List<PMEvent> pmEventList, BizEventsPMIngestionExecution pmIngestionExec) {
 
         try {
             pmIngestionExec.setStatus("DONE");
@@ -61,7 +61,7 @@ public class AsyncService {
                                     .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
                                     .orElseThrow(() -> new RuntimeException("importo null. transactionId=" + pmEvent.getPkTransactionId()));
 
-                            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail, paymentMethodType);
+                            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail);
                             if (result != null) {
                                 saveOnCosmos(result);
 

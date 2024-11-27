@@ -59,23 +59,6 @@ public class PMExtractionService implements IPMExtractionService {
                 .extractionType(pmExtractionType)
                 .build();
 
-//        PaymentMethodType paymentMethodType;
-//        Specification<PPTransaction> spec = switch (pmExtractionType) {
-//            case CARD -> {
-//                paymentMethodType = PaymentMethodType.CP;
-//                yield new CardExtractionSpec(dateFrom, dateTo, taxCodes);
-//            }
-//            case BPAY -> {
-//                paymentMethodType = PaymentMethodType.JIF;
-//                yield new BPayExtractionSpec(dateFrom, dateTo, taxCodes);
-//            }
-//            case PAYPAL -> {
-//                paymentMethodType = PaymentMethodType.PPAL;
-//                yield new PayPalExtractionSpec(dateFrom, dateTo, taxCodes);
-//            }
-//            default -> throw new AppException(AppError.BAD_REQUEST,
-//                    "Invalid PM extraction type [pmExtractionType=" + pmExtractionType + "]");
-//        };
         Specification<PPTransaction> spec = new PmExtractionSpec(dateFrom, dateTo, taxCodes);
 
         List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
@@ -83,36 +66,18 @@ public class PMExtractionService implements IPMExtractionService {
         pmIngestionExec.setNumRecordFound(ppTrList.size());
 
         List<PMEvent> pmEventList;
-        try {
-            pmEventList = ppTrList.stream()
-                    .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
-                    .toList();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        pmEventList = ppTrList.stream()
+                .map(ppTransaction -> modelMapper.map(ppTransaction, PMEvent.class))
+                .toList();
 
-        asyncService.processDataAsync(pmEventList, getPaymentMethodType(pmExtractionType), pmIngestionExec);
+        asyncService.processDataAsync(pmEventList, pmIngestionExec);
 
         return ExtractionResponse.builder()
                 .elements(ppTrList.size())
                 .build();
     }
 
-    private static PaymentMethodType getPaymentMethodType(PMExtractionType paymentMethodType) {
-        switch (paymentMethodType) {
-            case CARD -> {
-                return PaymentMethodType.CP;
-            }
-            case BPAY -> {
-                return PaymentMethodType.JIF;
-            }
-            case PAYPAL -> {
-                return PaymentMethodType.PPAL;
-            }
-            default -> throw new AppException(AppError.BAD_REQUEST,
-                    "Invalid PM extraction type [pmExtractionType=" + paymentMethodType + "]");
-        }
-    }
+
 
 
 }
