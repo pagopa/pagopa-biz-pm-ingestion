@@ -88,23 +88,29 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
 
     private static PaymentMethodType getMethodType(PPTransaction ppTransaction) {
         if (ppTransaction == null || ppTransaction.getPpWallet() == null || ppTransaction.getPpWallet().getType() == null) {
+            // only precaution. This does not occur
             return null;
         }
         if (ppTransaction.getPpWallet().getType().intValue() == 1
                 && ppTransaction.getPpWallet().getFkCreditCard() != null) {
+            // note: type=1 is sufficient
             return PaymentMethodType.CP;
         }
-        if (ppTransaction.getPpWallet().getType().intValue() == 2
-                && ppTransaction.getPpWallet().getFkCreditCard() != null) {
+        if (ppTransaction.getPpWallet().getType().intValue() == 2) {
+            // TODO: check this type
             return PaymentMethodType.MYBK;
         }
         if (ppTransaction.getPpWallet().getType().intValue() == 3
                 && ppTransaction.getPpWallet().getFkBPay() != null) {
+            // type=3 is NOT sufficient.
+            // 3 is EXTERNAL_PS.
+            // We need to check the FK_BPAY != null
             return PaymentMethodType.JIF;
         }
         if (ppTransaction.getPpWallet().getType().intValue() == 5
                 && ppTransaction.getPpWallet().getPpPayPal() != null
                 && !ppTransaction.getPpWallet().getPpPayPal().isEmpty()) {
+            // I'm not sure if type=3 is sufficient
             return PaymentMethodType.PPAL;
         }
         return PaymentMethodType.UNKNOWN;
