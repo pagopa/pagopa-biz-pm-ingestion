@@ -24,6 +24,6 @@ public class PPPsp {
     private String businessName;
 
     @Column(name = "PAYMENT_TYPE")
-    private PaymentMethodType paymentType;
+    private String paymentType;
 
 }

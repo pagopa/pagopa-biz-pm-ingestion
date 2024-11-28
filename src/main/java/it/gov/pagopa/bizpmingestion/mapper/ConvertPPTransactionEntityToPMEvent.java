@@ -102,43 +102,24 @@ public class ConvertPPTransactionEntityToPMEvent implements Converter<PPTransact
                     // retrieve from PSP
                     Optional.ofNullable(ppTransaction.getPpWallet().getPpPsp())
                             .map(PPPsp::getPaymentType)
+                            .map(PaymentMethodType::valueOfFromString)
                             .orElse(PaymentMethodType.UNKNOWN);
             default -> PaymentMethodType.UNKNOWN;
         };
     }
 
     private String getVposCircuitCode(String vposCircuitCode) {
-        String typeOfCircuitCode;
-        switch (vposCircuitCode == null ? "" : vposCircuitCode) {
-            case "-2":
-                typeOfCircuitCode = "VPAY";
-                break;
-            case "-1":
-                typeOfCircuitCode = "OTHER";
-                break;
-            case "01":
-                typeOfCircuitCode = "VISA";
-                break;
-            case "02":
-                typeOfCircuitCode = "MASTERCARD";
-                break;
-            case "04":
-                typeOfCircuitCode = "MAESTRO";
-                break;
-            case "05":
-                typeOfCircuitCode = "VISA_ELECTRON";
-                break;
-            case "06":
-                typeOfCircuitCode = "AMEX";
-                break;
-            case "07":
-                typeOfCircuitCode = "DINERS";
-                break;
-            default:
-                typeOfCircuitCode = "";
-                break;
-        }
-        return typeOfCircuitCode;
+        return switch (vposCircuitCode == null ? "" : vposCircuitCode) {
+            case "-2" -> "VPAY";
+            case "-1" -> "OTHER";
+            case "01" -> "VISA";
+            case "02" -> "MASTERCARD";
+            case "04" -> "MAESTRO";
+            case "05" -> "VISA_ELECTRON";
+            case "06" -> "AMEX";
+            case "07" -> "DINERS";
+            default -> "";
+        };
     }
 
     private List<PMEventPaymentDetail> getPMPaymentDetailList(List<PPPaymentDetail> ppPaymentDetailList) {
