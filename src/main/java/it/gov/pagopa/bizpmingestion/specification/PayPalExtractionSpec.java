@@ -19,7 +19,7 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
      */
     private static final long serialVersionUID = 4326675556613149717L;
     private static final Byte[] statusFilter = {3, 8, 9, 14, 21};
-    private static final Byte[] accountingStatusFilter = {null, 1, 5};
+    private static final Byte[] accountingStatusFilter = {1, 5};
     private static final String CREATION_DATE = "creationDate";
     private String creationDateFrom;
     private String creationDateTo;
@@ -43,7 +43,7 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
         Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
         Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
         ppWalletJoin.join("ppBPay", JoinType.INNER);
-        ppWalletJoin.join("ppCreditCard", JoinType.INNER);
+//        ppWalletJoin.join("ppCreditCard", JoinType.INNER);
         Join<?, ?> ppPayPalJoin = ppWalletJoin.join("ppPayPal", JoinType.INNER);
         root.join("ppPsp", JoinType.INNER);
         ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
@@ -54,7 +54,7 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
             predicatePPUserfiscalCode = exp.in(taxCodes);
         }
 
-        cb.isNotNull(ppWalletJoin.get("fkCreditCard"));
+//        cb.isNotNull(ppWalletJoin.get("fkCreditCard"));
         Predicate predicateType = cb.equal(ppWalletJoin.get("type"), 5);
         Predicate predicateDefault = cb.equal(ppPayPalJoin.get("isDefault"), 1);
 
@@ -64,6 +64,7 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
 
         exp = root.get("accountingStatus");
         Predicate predicateAccountingStatus = exp.in(accountingStatusFilter);
+        Predicate predicateAccountingStatusIsNull = exp.isNull();
 
         // creation date predicate
         if (creationDateFrom != null && creationDateTo == null) {
@@ -81,7 +82,8 @@ public class PayPalExtractionSpec implements Specification<PPTransaction> {
                     Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE).atStartOfDay()));
         }
 
-        Predicate predicatePPTransactionStatus = cb.and(predicateStatus, predicateAccountingStatus);
+        Predicate pAccountStatus = cb.or(predicateAccountingStatusIsNull, predicateAccountingStatus);
+        Predicate predicatePPTransactionStatus = cb.and(predicateStatus, pAccountStatus);
 
         return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus, predicateType), predicateDefault, creationDatePredicate);
     }

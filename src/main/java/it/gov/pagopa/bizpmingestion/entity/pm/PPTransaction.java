@@ -10,7 +10,7 @@ import java.sql.Timestamp;
         attributeNodes = {
                 @NamedAttributeNode("ppUser"),
                 @NamedAttributeNode("ppPsp"),
-                @NamedAttributeNode(value = "ppWallet", subgraph = "ppCreditCard-subgraph"),
+//                @NamedAttributeNode(value = "ppWallet", subgraph = "ppCreditCard-subgraph"),
                 @NamedAttributeNode(value = "ppPayment", subgraph = "ppPaymentDetail-subgraph")
         },
         subgraphs = {
@@ -20,12 +20,12 @@ import java.sql.Timestamp;
                                 @NamedAttributeNode("ppPaymentDetail")
                         }
                 ),
-                @NamedSubgraph(
-                        name = "ppCreditCard-subgraph",
-                        attributeNodes = {
-                                @NamedAttributeNode("ppCreditCard")
-                        }
-                )
+//                @NamedSubgraph(
+//                        name = "ppCreditCard-subgraph",
+//                        attributeNodes = {
+//                                @NamedAttributeNode("ppCreditCard")
+//                        }
+//                )
         }
 )
 @Entity

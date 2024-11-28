@@ -28,7 +28,7 @@ public class PPWallet {
     @Column(name = "FK_BPAY")
     private Long fkBPay;
 
-    @ManyToOne(targetEntity = PPCreditCard.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = PPCreditCard.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_CREDIT_CARD", referencedColumnName = "ID_CREDIT_CARD", insertable = false, updatable = false)
     private PPCreditCard ppCreditCard;
 
@@ -39,4 +39,9 @@ public class PPWallet {
     @Builder.Default
     @OneToMany(targetEntity = PPPayPal.class, fetch = FetchType.EAGER, mappedBy = "ppWallet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PPPayPal> ppPayPal = new ArrayList<>();
+
+    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
+    private PPPsp ppPsp;
+
 }

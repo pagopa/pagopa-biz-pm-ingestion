@@ -12,4 +12,12 @@ public enum PaymentMethodType {
     public static boolean isValidPaymentMethod(String origin) {
         return Arrays.stream(values()).anyMatch(it -> it.name().equalsIgnoreCase(origin));
     }
+
+    public static PaymentMethodType valueOfFromString(String value){
+        try{
+            return valueOf(value);
+        } catch (Exception e) {
+            return UNKNOWN;
+        }
+    }
 }

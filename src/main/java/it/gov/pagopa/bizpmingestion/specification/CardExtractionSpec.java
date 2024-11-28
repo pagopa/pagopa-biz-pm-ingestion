@@ -21,7 +21,7 @@ public class CardExtractionSpec implements Specification<PPTransaction> {
 
     private static final String CREATION_DATE = "creationDate";
     private static final Byte[] statusFilter = {3, 8, 9, 14, 21};
-    private static final Byte[] accountingStatusFilter = {null, 1, 5};
+    private static final Byte[] accountingStatusFilter = {1, 5};
     private String creationDateFrom;
     private String creationDateTo;
     private List<String> taxCodes;
@@ -41,24 +41,26 @@ public class CardExtractionSpec implements Specification<PPTransaction> {
         Predicate predicatePPUserfiscalCode = cb.isTrue(cb.literal(true));
 
         Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
-        Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
-        ppWalletJoin.join("ppCreditCard", JoinType.INNER);
         Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
-        ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
+//        Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.INNER);
+//        ppWalletJoin.join("ppCreditCard", JoinType.INNER);
         root.join("ppPsp", JoinType.INNER);
+        ppPaymentJoin.join("ppPaymentDetail", JoinType.INNER);
+
 
         if (!CollectionUtils.isEmpty(taxCodes)) {
             Expression<String> exp = ppUserJoin.get("fiscalCode");
             predicatePPUserfiscalCode = exp.in(taxCodes);
         }
 
-        Predicate predicateCreditCard = cb.isNotNull(ppWalletJoin.get("fkCreditCard"));
+//        Predicate predicateCreditCard = cb.isNotNull(ppWalletJoin.get("fkCreditCard"));
 
         Expression<Byte> exp = root.get("status");
         Predicate predicateStatus = exp.in(statusFilter);
 
         exp = root.get("accountingStatus");
         Predicate predicateAccountingStatus = exp.in(accountingStatusFilter);
+        Predicate predicateAccountingStatusIsNull = exp.isNull();
 
         // creation date predicate
         if (creationDateFrom != null && creationDateTo == null) {
@@ -76,8 +78,10 @@ public class CardExtractionSpec implements Specification<PPTransaction> {
                     Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE).atStartOfDay()));
         }
 
-        Predicate predicatePPTransactionStatus = cb.and(predicateStatus, predicateAccountingStatus);
+        Predicate pAccountStatus = cb.or(predicateAccountingStatusIsNull, predicateAccountingStatus);
+        Predicate predicatePPTransactionStatus = cb.and(predicateStatus, pAccountStatus);
 
-        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus, predicateCreditCard), creationDatePredicate);
+//        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus, predicateCreditCard), creationDatePredicate);
+        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus), creationDatePredicate);
     }
 }

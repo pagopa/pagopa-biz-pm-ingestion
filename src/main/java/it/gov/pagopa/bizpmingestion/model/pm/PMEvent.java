@@ -1,5 +1,6 @@
 package it.gov.pagopa.bizpmingestion.model.pm;
 
+import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class PMEvent {
     private String userFiscalCode; //pu.FISCAL_CODE
     private String surname;
     private String name;
+    private PaymentMethodType methodType;
     private String businessName;
     private String rrn;
     private String numAut;
