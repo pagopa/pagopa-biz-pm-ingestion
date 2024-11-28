@@ -1,5 +1,6 @@
 package it.gov.pagopa.bizpmingestion.entity.pm;
 
+import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,5 +22,8 @@ public class PPPsp {
 
     @Column(name = "BUSINESS_NAME")
     private String businessName;
+
+    @Column(name = "PAYMENT_TYPE")
+    private PaymentMethodType paymentType;
 
 }

@@ -39,4 +39,9 @@ public class PPWallet {
     @Builder.Default
     @OneToMany(targetEntity = PPPayPal.class, fetch = FetchType.EAGER, mappedBy = "ppWallet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PPPayPal> ppPayPal = new ArrayList<>();
+
+    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
+    private PPPsp ppPsp;
+
 }
