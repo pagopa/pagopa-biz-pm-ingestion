@@ -60,7 +60,7 @@ public class AsyncService {
                                     .orElse(Collections.emptyList())
                                     .stream()
                                     .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                                    .orElseThrow(() -> new RuntimeException("importo null. transactionId=" + pmEvent.getPkTransactionId()));
+                                    .orElseThrow(() -> new RuntimeException(pmEvent.getUserFiscalCode() +" importo null. transactionId=" + pmEvent.getPkTransactionId()));
 
                             PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail);
                             if (result != null) {

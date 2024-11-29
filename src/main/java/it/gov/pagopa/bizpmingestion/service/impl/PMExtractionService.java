@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -72,7 +73,7 @@ public class PMExtractionService implements IPMExtractionService {
 
         List<PMEvent> pmEventList;
         pmEventList = ppTrList.stream()
-                .map(ppTransaction -> convert(ppTransaction))
+                .map(this::convert)
                 .toList();
 
         asyncService.processDataAsync(pmEventList, pmIngestionExec);
@@ -85,8 +86,8 @@ public class PMExtractionService implements IPMExtractionService {
 
     public PMEvent convert(PPTransaction ppTransaction) {
 
-        String stringCreationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-                .format(ppTransaction.getCreationDate());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        String stringCreationDate = ppTransaction.getCreationDate().toInstant().atZone(ZoneOffset.UTC).format(formatter);
 
         var psp = ppPspRepository.findById(ppTransaction.getFkPsp());
 

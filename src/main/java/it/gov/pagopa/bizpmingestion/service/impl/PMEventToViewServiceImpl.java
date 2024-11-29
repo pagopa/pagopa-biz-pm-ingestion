@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 public class PMEventToViewServiceImpl implements IPMEventToViewService {
 
     private static final String REF_TYPE_IUV = "IUV";
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private static final String REMITTANCE_INFORMATION_REGEX = "/TXT/(.*)";
     private final List<String> validChannels = Arrays.asList(System.getenv().getOrDefault("VALID_CHANNELS", "CITTADINANZA_DIGITALE,IO_PAY").split(","));
 
