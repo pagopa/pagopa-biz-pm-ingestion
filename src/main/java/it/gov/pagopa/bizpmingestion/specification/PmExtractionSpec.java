@@ -1,5 +1,6 @@
 package it.gov.pagopa.bizpmingestion.specification;
 
+import com.azure.spring.data.cosmos.core.query.Criteria;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import jakarta.persistence.criteria.*;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,8 @@ public class PmExtractionSpec implements Specification<PPTransaction> {
         Predicate predicatePPUserfiscalCode = cb.isTrue(cb.literal(true));
 
         Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
-
+        Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
+        Predicate cardVerification = cb.equal(ppPaymentJoin.get("creditCardVerification"), 0L);
 
         if (!CollectionUtils.isEmpty(taxCodes)) {
             Expression<String> exp = ppUserJoin.get("fiscalCode");
@@ -75,6 +77,6 @@ public class PmExtractionSpec implements Specification<PPTransaction> {
         Predicate pAccountStatus = cb.or(predicateAccountingStatusIsNull, predicateAccountingStatus);
         Predicate predicatePPTransactionStatus = cb.and(predicateStatus, pAccountStatus);
 
-        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus), creationDatePredicate);
+        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus), creationDatePredicate, cardVerification);
     }
 }

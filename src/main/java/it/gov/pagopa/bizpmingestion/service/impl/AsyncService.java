@@ -3,16 +3,16 @@ package it.gov.pagopa.bizpmingestion.service.impl;
 import com.microsoft.azure.functions.annotation.ExponentialBackoffRetry;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.BizEventsPMIngestionExecution;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.SkippedTransaction;
+import it.gov.pagopa.bizpmingestion.entity.pm.*;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
+import it.gov.pagopa.bizpmingestion.model.pm.PMEventPayPal;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
-import it.gov.pagopa.bizpmingestion.repository.BizEventsViewCartRepository;
-import it.gov.pagopa.bizpmingestion.repository.BizEventsViewGeneralRepository;
-import it.gov.pagopa.bizpmingestion.repository.BizEventsViewUserRepository;
-import it.gov.pagopa.bizpmingestion.repository.PMIngestionExecutionRepository;
+import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.spi.MappingContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -35,6 +35,7 @@ public class AsyncService {
     private final PMIngestionExecutionRepository pmIngestionExecutionRepository;
     private final IPMEventToViewService pmEventToViewService;
 
+
     @Autowired
     public AsyncService(BizEventsViewGeneralRepository bizEventsViewGeneralRepository, BizEventsViewCartRepository bizEventsViewCartRepository,
                         BizEventsViewUserRepository bizEventsViewUserRepository, PMIngestionExecutionRepository pmIngestionExecutionRepository,
@@ -52,7 +53,7 @@ public class AsyncService {
         try {
             pmIngestionExec.setStatus("DONE");
 
-            List<SkippedTransaction> skippedId = pmEventList.parallelStream()
+            List<SkippedTransaction> skippedId = pmEventList.stream()
                     .map(pmEvent -> {
                         try {
                             PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
