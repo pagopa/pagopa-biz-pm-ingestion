@@ -53,7 +53,7 @@ public class AsyncService {
         try {
             pmIngestionExec.setStatus("DONE");
 
-            List<SkippedTransaction> skippedId = pmEventList.stream()
+            List<SkippedTransaction> skippedId = pmEventList.parallelStream()
                     .map(pmEvent -> {
                         try {
                             PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
