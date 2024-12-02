@@ -9,7 +9,7 @@ import java.sql.Timestamp;
         name = "transaction-entity-graph",
         attributeNodes = {
                 @NamedAttributeNode("ppUser"),
-                @NamedAttributeNode("ppPsp"),
+//                @NamedAttributeNode("ppPsp"),
 //                @NamedAttributeNode(value = "ppWallet", subgraph = "ppCreditCard-subgraph"),
                 @NamedAttributeNode(value = "ppPayment", subgraph = "ppPaymentDetail-subgraph")
         },
@@ -87,9 +87,9 @@ public class PPTransaction {
     @JoinColumn(name = "FK_WALLET", referencedColumnName = "ID_WALLET", insertable = false, updatable = false)
     private PPWallet ppWallet;
 
-    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
-    private PPPsp ppPsp;
+//    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.EAGER)
+//    @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
+//    private PPPsp ppPsp;
 
 
 }

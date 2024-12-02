@@ -1,7 +1,6 @@
 package it.gov.pagopa.bizpmingestion.config;
 
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
-import it.gov.pagopa.bizpmingestion.mapper.ConvertPPTransactionEntityToPMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -17,8 +16,8 @@ public class MappingsConfiguration {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        Converter<PPTransaction, PMEvent> convertPPTransactionEntityToPMEvent = new ConvertPPTransactionEntityToPMEvent();
-        mapper.createTypeMap(PPTransaction.class, PMEvent.class).setConverter(convertPPTransactionEntityToPMEvent);
+//        Converter<PPTransaction, PMEvent> convertPPTransactionEntityToPMEvent = new ConvertPPTransactionEntityToPMEvent();
+//        mapper.createTypeMap(PPTransaction.class, PMEvent.class).setConverter(convertPPTransactionEntityToPMEvent);
 
         return mapper;
     }

@@ -34,6 +34,9 @@ public class PPPayment {
     @Column(name = "ORIGIN")
     private String origin; // canale pagamento
 
+    @Column(name = "CREDIT_CARD_VERIFICATION")
+    private Long creditCardVerification;
+
     @Builder.Default
     @OneToMany(targetEntity = PPPaymentDetail.class, fetch = FetchType.EAGER, mappedBy = "ppPayment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PPPaymentDetail> ppPaymentDetail = new ArrayList<>();

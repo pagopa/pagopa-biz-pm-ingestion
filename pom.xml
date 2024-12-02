@@ -12,7 +12,7 @@
 
 	<groupId>it.gov.pagopa</groupId>
 	<artifactId>bizpmingestion</artifactId>
-	<version>1.1.14</version>
+	<version>1.1.14-1-revision-2-query</version>
 	<name>Biz PM Ingestion</name>
 	<description>Microservice for retrieving payment receipts from the PM.</description>
 
