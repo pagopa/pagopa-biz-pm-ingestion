@@ -1,6 +1,7 @@
 package it.gov.pagopa.bizpmingestion.repository;
 
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -14,7 +15,7 @@ public interface PPTransactionRepository extends JpaRepository<PPTransaction, Lo
     List<PPTransaction> findAll(Specification<PPTransaction> spec);
 
     @EntityGraph(value = "transaction-entity-graph")
-    List<PPTransaction> findAll(Specification<PPTransaction> spec, Pageable pageable);
+    Page<PPTransaction> findAll(Specification<PPTransaction> spec, Pageable pageable);
 
 
 

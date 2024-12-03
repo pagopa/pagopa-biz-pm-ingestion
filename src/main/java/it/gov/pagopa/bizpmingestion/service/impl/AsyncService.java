@@ -13,6 +13,8 @@ import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
@@ -60,11 +62,12 @@ public class AsyncService {
     public void processDataAsync(Specification<PPTransaction> spec, BizEventsPMIngestionExecution pmIngestionExec) {
 
         try {
-            List<PPTransaction> ppTrList;
+            Page<PPTransaction> ppTrList;
+            int i = 0;
             do {
-                ppTrList = ppTransactionRepository.findAll(Specification.where(spec), Pageable.ofSize(1000));
-                handlePage(pmIngestionExec, ppTrList);
-            } while (!ppTrList.isEmpty());
+                ppTrList = ppTransactionRepository.findAll(Specification.where(spec), PageRequest.of(i,1000));
+                handlePage(pmIngestionExec, ppTrList.getContent());
+            } while (i < ppTrList.getTotalPages());
 
         } catch (Exception e) {
             pmIngestionExec.setStatus("FAILED");
