@@ -48,10 +48,10 @@ microservice-chart:
         - all
   resources:
     requests:
-      memory: "512Mi"
+      memory: "1024Mi"
       cpu: "0.5"
     limits:
-      memory: "2048Mi"
+      memory: "4096Mi"
       cpu: "1.0"
   autoscaling:
     enable: true
@@ -87,6 +87,7 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_LOGS_EXPORTER: none
     OTEL_TRACES_SAMPLER: "always_on"
+    JAVA_TOOL_OPTIONS: '-Xms768m -Xmx3072m'
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-p-connection-string'
