@@ -12,8 +12,8 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.spi.MappingContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -58,49 +58,11 @@ public class AsyncService {
     public void processDataAsync(Specification<PPTransaction> spec, BizEventsPMIngestionExecution pmIngestionExec) {
 
         try {
-
-            List<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec));
-
-            pmIngestionExec.setNumRecordFound(ppTrList.size());
-
-            List<PMEvent> pmEventList;
-            pmEventList = ppTrList.stream()
-                    .map(this::convert)
-                    .toList();
-
-            pmIngestionExec.setStatus("DONE");
-
-            List<SkippedTransaction> skippedId = pmEventList.parallelStream()
-                    .map(pmEvent -> {
-                        try {
-                            PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
-                                    .orElse(Collections.emptyList())
-                                    .stream()
-                                    .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
-                                    .orElseThrow(() -> new RuntimeException(pmEvent.getUserFiscalCode() +" importo null. transactionId=" + pmEvent.getPkTransactionId()));
-
-                            PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail);
-                            if (result != null) {
-                                saveOnCosmos(result);
-
-                            } else {
-                                throw new RuntimeException("payer and debtor are null. transactionID=" + pmEvent.getPkTransactionId());
-                            }
-                            return null;
-                        } catch (Exception e) {
-                            pmIngestionExec.setStatus("DONE WITH SKIP");
-
-                            return SkippedTransaction.builder()
-                                    .transactionId(pmEvent.getPkTransactionId())
-                                    .cause(e.getMessage())
-                                    .build();
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
-
-            pmIngestionExec.setNumRecordIngested(pmEventList.size() - skippedId.size());
-            pmIngestionExec.setSkippedID(skippedId);
+            List<PPTransaction> ppTrList;
+            do {
+                ppTrList = ppTransactionRepository.findAll(Specification.where(spec), Pageable.ofSize(1000));
+                handlePage(pmIngestionExec, ppTrList);
+            } while (!ppTrList.isEmpty());
 
         } catch (Exception e) {
             pmIngestionExec.setStatus("FAILED");
@@ -113,14 +75,55 @@ public class AsyncService {
         }
     }
 
+    private void handlePage(BizEventsPMIngestionExecution pmIngestionExec, List<PPTransaction> ppTrList) {
+        pmIngestionExec.setNumRecordFound(ppTrList.size());
+
+        List<PMEvent> pmEventList;
+        pmEventList = ppTrList.stream()
+                .map(this::convert)
+                .toList();
+
+        pmIngestionExec.setStatus("DONE");
+
+        List<SkippedTransaction> skippedId = pmEventList.parallelStream()
+                .map(pmEvent -> {
+                    try {
+                        PMEventPaymentDetail pmEventPaymentDetail = Optional.ofNullable(pmEvent.getPaymentDetailList())
+                                .orElse(Collections.emptyList())
+                                .stream()
+                                .max(Comparator.comparing(PMEventPaymentDetail::getImporto))
+                                .orElseThrow(() -> new RuntimeException(pmEvent.getUserFiscalCode() + " importo null. transactionId=" + pmEvent.getPkTransactionId()));
+
+                        PMEventToViewResult result = pmEventToViewService.mapPMEventToView(pmEvent, pmEventPaymentDetail);
+                        if (result != null) {
+                            saveOnCosmos(result);
+
+                        } else {
+                            throw new RuntimeException("payer and debtor are null. transactionID=" + pmEvent.getPkTransactionId());
+                        }
+                        return null;
+                    } catch (Exception e) {
+                        pmIngestionExec.setStatus("DONE WITH SKIP");
+
+                        return SkippedTransaction.builder()
+                                .transactionId(pmEvent.getPkTransactionId())
+                                .cause(e.getMessage())
+                                .build();
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        pmIngestionExec.setNumRecordIngested(pmEventList.size() - skippedId.size());
+        pmIngestionExec.setSkippedID(skippedId);
+    }
+
     @ExponentialBackoffRetry(maxRetryCount = 3, maximumInterval = "00:00:30", minimumInterval = "00:00:10")
     private void saveOnCosmos(PMEventToViewResult result) {
         bizEventsViewGeneralRepository.save(result.getGeneralView());
         bizEventsViewCartRepository.save(result.getCartView());
         bizEventsViewUserRepository.saveAll(result.getUserViewList());
     }
-
-
 
 
     public PMEvent convert(PPTransaction ppTransaction) {
@@ -206,10 +209,9 @@ public class AsyncService {
             case 2, 3 -> {
                 // retrieve from PSP
                 var psp = ppPspRepository.findById(ppTransaction.getPpWallet().getPpPsp());
-                if(psp.isPresent()){
+                if (psp.isPresent()) {
                     yield PaymentMethodType.valueOfFromString(psp.get().getPaymentType());
-                }
-                else {
+                } else {
                     yield PaymentMethodType.UNKNOWN;
                 }
             }
