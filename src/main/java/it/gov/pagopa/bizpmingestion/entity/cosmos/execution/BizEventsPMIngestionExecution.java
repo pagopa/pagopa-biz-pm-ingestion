@@ -1,5 +1,6 @@
 package it.gov.pagopa.bizpmingestion.entity.cosmos.execution;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.azure.spring.data.cosmos.core.mapping.Container;
@@ -26,9 +27,9 @@ public class BizEventsPMIngestionExecution {
     private String dateTo;
     private PMExtractionType extractionType;
     private List<String> taxCodesFilter;
-    private List<SkippedTransaction> skippedID;
-    private Integer numRecordFound;
-    private Integer numRecordIngested;
+    private List<SkippedTransaction> skippedID = new ArrayList<>();
+    private Integer numRecordFound = 0;
+    private Integer numRecordIngested = 0;
     private String startTime;
     private String endTime;
     @Builder.Default

@@ -35,21 +35,10 @@ import java.util.*;
 @Slf4j
 public class PMExtractionService implements IPMExtractionService {
 
-    private static final String LOG_BASE_HEADER_INFO = "[ClassMethod: %s] - [MethodParamsToLog: %s]";
-
-    private final ModelMapper modelMapper;
-    private final PPTransactionRepository ppTransactionRepository;
 
     @Autowired
-    AsyncService asyncService;
-    @Autowired
-    PPPspRepository ppPspRepository;
+    private AsyncService asyncService;
 
-    @Autowired
-    public PMExtractionService(ModelMapper modelMapper, PPTransactionRepository ppTransactionRepository) {
-        this.modelMapper = modelMapper;
-        this.ppTransactionRepository = ppTransactionRepository;
-    }
 
 
     @Override
@@ -70,7 +59,7 @@ public class PMExtractionService implements IPMExtractionService {
         asyncService.processDataAsync(spec, pmIngestionExec);
 
         return ExtractionResponse.builder()
-                .elements(0)
+                .elements(-1)
                 .build();
     }
 

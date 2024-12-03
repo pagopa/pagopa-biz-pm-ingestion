@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -26,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @EnableAsync
 @Service
@@ -33,6 +33,7 @@ import java.util.*;
 public class AsyncService {
 
     private static final String LOG_BASE_HEADER_INFO = "[ClassMethod: %s] - [MethodParamsToLog: %s]";
+    public static final int PAGE_SIZE = 1000;
 
     private final BizEventsViewGeneralRepository bizEventsViewGeneralRepository;
     private final BizEventsViewCartRepository bizEventsViewCartRepository;
@@ -62,26 +63,70 @@ public class AsyncService {
     public void processDataAsync(Specification<PPTransaction> spec, BizEventsPMIngestionExecution pmIngestionExec) {
 
         try {
-            Page<PPTransaction> ppTrList;
             int i = 0;
+            List<CompletableFuture<BizEventsPMIngestionExecution>> futures = new ArrayList<>();
+            pmIngestionExec.setStatus("DONE");
+            pmIngestionExec.setNumRecordIngested(0);
+            pmIngestionExec.setNumRecordIngested(0);
+            Page<PPTransaction> pageInfo = ppTransactionRepository.findAll(Specification.where(spec), PageRequest.of(i, 1));
+            pmIngestionExec.setNumRecordFound(Math.toIntExact(pageInfo.getTotalElements()));
+
+            log.info("inizio elaborazione di {} elementi", pageInfo.getTotalElements());
+
             do {
-                ppTrList = ppTransactionRepository.findAll(Specification.where(spec), PageRequest.of(i,1000));
-                handlePage(pmIngestionExec, ppTrList.getContent());
-            } while (i < ppTrList.getTotalPages());
+                int finalI = i;
+                CompletableFuture<BizEventsPMIngestionExecution> f = CompletableFuture
+                        .supplyAsync(() -> handlePage(spec, finalI))
+                        .exceptionally(ex -> {
+                            log.error("Errore nel task {}", finalI, ex);
+                            throw new RuntimeException("Eccezione propagata dal task " + finalI, ex);
+                        });
+                futures.add(f);
+                i += 1;
+            } while (i < pageInfo.getTotalElements() / PAGE_SIZE);
+
+            // Aspetta la fine di tutti i CompletableFuture
+            CompletableFuture<Void> allOfFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+            // Quando tutti i task sono completati, combina tutte le liste in una singola lista
+            CompletableFuture<List<BizEventsPMIngestionExecution>> combinedFuture = allOfFuture.thenApply(v ->
+                    futures.stream()
+                            .map(CompletableFuture::join) // Ottieni il risultato di ogni future (lista di stringhe)
+                            .toList()
+            ).exceptionally(ex -> {
+                        futures.forEach(f -> f.cancel(true));
+                        return null;
+                    }
+            );
+            combinedFuture.join().forEach(
+                    elem -> {
+                        if (!elem.getStatus().equals("DONE")) {
+                            pmIngestionExec.setStatus(elem.getStatus());
+                        }
+                        pmIngestionExec.getSkippedID().addAll(elem.getSkippedID());
+                        pmIngestionExec.setNumRecordIngested(pmIngestionExec.getNumRecordIngested() + elem.getNumRecordIngested());
+                    }
+            );
+
 
         } catch (Exception e) {
             pmIngestionExec.setStatus("FAILED");
-
             log.error(String.format(LOG_BASE_HEADER_INFO, "processDataAsync", "[processId=" + pmIngestionExec.getId() + "] - Error during asynchronous processing: " + e.getMessage()));
         } finally {
             pmIngestionExec.setEndTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(LocalDateTime.now()));
             pmIngestionExecutionRepository.save(pmIngestionExec);
-            log.info("Done!");
+            log.info("Done! {}", pmIngestionExec);
         }
     }
 
-    private void handlePage(BizEventsPMIngestionExecution pmIngestionExec, List<PPTransaction> ppTrList) {
-        pmIngestionExec.setNumRecordFound(ppTrList.size());
+    @ExponentialBackoffRetry(maxRetryCount = 5, maximumInterval = "00:00:30", minimumInterval = "00:00:10")
+    private BizEventsPMIngestionExecution handlePage(Specification<PPTransaction> spec, int i) {
+        BizEventsPMIngestionExecution pmIngestionExec = BizEventsPMIngestionExecution.builder().build();
+
+        Page<PPTransaction> ppTrList = ppTransactionRepository.findAll(Specification.where(spec), PageRequest.of(i, PAGE_SIZE));
+        log.info("trovati {}", ppTrList.getNumberOfElements());
+
+        pmIngestionExec.setNumRecordFound(ppTrList.getNumberOfElements());
 
         List<PMEvent> pmEventList;
         pmEventList = ppTrList.stream()
@@ -121,6 +166,7 @@ public class AsyncService {
 
         pmIngestionExec.setNumRecordIngested(pmEventList.size() - skippedId.size());
         pmIngestionExec.setSkippedID(skippedId);
+        return pmIngestionExec;
     }
 
     @ExponentialBackoffRetry(maxRetryCount = 3, maximumInterval = "00:00:30", minimumInterval = "00:00:10")

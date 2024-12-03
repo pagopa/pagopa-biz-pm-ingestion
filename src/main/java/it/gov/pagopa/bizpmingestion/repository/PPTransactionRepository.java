@@ -11,10 +11,10 @@ import java.util.List;
 
 public interface PPTransactionRepository extends JpaRepository<PPTransaction, Long> {
 
-    @EntityGraph(value = "transaction-entity-graph")
+//    @EntityGraph(value = "transaction-entity-graph")
     List<PPTransaction> findAll(Specification<PPTransaction> spec);
 
-    @EntityGraph(value = "transaction-entity-graph")
+//    @EntityGraph(value = "transaction-entity-graph")
     Page<PPTransaction> findAll(Specification<PPTransaction> spec, Pageable pageable);
 
 
