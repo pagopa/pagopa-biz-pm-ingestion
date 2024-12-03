@@ -28,7 +28,7 @@ public class PPWallet {
     @Column(name = "FK_BPAY")
     private Long fkBPay;
 
-    @ManyToOne(targetEntity = PPCreditCard.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = PPCreditCard.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "FK_CREDIT_CARD", referencedColumnName = "ID_CREDIT_CARD", insertable = false, updatable = false)
     private PPCreditCard ppCreditCard;
 

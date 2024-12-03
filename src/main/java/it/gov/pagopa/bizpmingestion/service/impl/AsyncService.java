@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -55,6 +56,7 @@ public class AsyncService {
     }
 
     @Async
+    @Transactional
     public void processDataAsync(Specification<PPTransaction> spec, BizEventsPMIngestionExecution pmIngestionExec) {
 
         try {
