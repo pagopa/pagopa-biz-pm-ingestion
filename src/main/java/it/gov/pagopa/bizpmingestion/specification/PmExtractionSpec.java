@@ -1,6 +1,5 @@
 package it.gov.pagopa.bizpmingestion.specification;
 
-import com.azure.spring.data.cosmos.core.query.Criteria;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import jakarta.persistence.criteria.*;
 import lombok.NoArgsConstructor;
@@ -41,8 +40,18 @@ public class PmExtractionSpec implements Specification<PPTransaction> {
         Predicate creationDatePredicate = cb.isTrue(cb.literal(true));
         Predicate predicatePPUserfiscalCode = cb.isTrue(cb.literal(true));
 
-        Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
-        Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);
+        Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.LEFT);
+        Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.LEFT);
+        Join<?, ?> ppWalletJoin = root.join("ppWallet", JoinType.LEFT);
+        root.join("ppPsp", JoinType.LEFT);
+        ppWalletJoin.join("ppCreditCard", JoinType.LEFT);
+        ppWalletJoin.join("ppBPay", JoinType.LEFT);
+        ppWalletJoin.join("ppPsp", JoinType.LEFT);
+        ppWalletJoin.join("ppPayPal", JoinType.LEFT);
+        Join<?, ?> ppDetailJoin = ppPaymentJoin.join("ppPaymentDetail", JoinType.LEFT);
+
+        Predicate importoMax = cb.max(ppDetailJoin.get("importo")).isNotNull();
+
         Predicate cardVerification = cb.equal(ppPaymentJoin.get("creditCardVerification"), 0L);
 
         if (!CollectionUtils.isEmpty(taxCodes)) {
@@ -61,22 +70,22 @@ public class PmExtractionSpec implements Specification<PPTransaction> {
         // creation date predicate
         if (creationDateFrom != null && creationDateTo == null) {
             creationDatePredicate = cb.greaterThanOrEqualTo(root.get(CREATION_DATE),
-                    Timestamp.valueOf(LocalDate.parse(creationDateFrom, DateTimeFormatter.ISO_DATE).atStartOfDay()));
+                    Timestamp.valueOf(LocalDate.parse(creationDateFrom, DateTimeFormatter.ISO_DATE_TIME).atStartOfDay()));
         } else if (creationDateFrom == null && creationDateTo != null) {
             creationDatePredicate = cb.lessThanOrEqualTo(root.get(CREATION_DATE),
-                    Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE).atStartOfDay()));
+                    Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE_TIME).atStartOfDay()));
         }
         // The execution proceeds on this branch in only 2 cases: dateFrom and dateTo equal null or both different from null,
         // to check the last case just apply the condition on one of the two dates
         else if (creationDateTo != null) {
             creationDatePredicate = cb.between(root.get(CREATION_DATE),
-                    Timestamp.valueOf(LocalDate.parse(creationDateFrom, DateTimeFormatter.ISO_DATE).atStartOfDay()),
-                    Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE).atStartOfDay()));
+                    Timestamp.valueOf(LocalDate.parse(creationDateFrom, DateTimeFormatter.ISO_DATE_TIME).atStartOfDay()),
+                    Timestamp.valueOf(LocalDate.parse(creationDateTo, DateTimeFormatter.ISO_DATE_TIME).atStartOfDay()));
         }
 
         Predicate pAccountStatus = cb.or(predicateAccountingStatusIsNull, predicateAccountingStatus);
         Predicate predicatePPTransactionStatus = cb.and(predicateStatus, pAccountStatus);
 
-        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus), creationDatePredicate, cardVerification);
+        return cb.and(predicatePPUserfiscalCode, cb.and(predicatePPTransactionStatus), creationDatePredicate, cardVerification, importoMax);
     }
 }

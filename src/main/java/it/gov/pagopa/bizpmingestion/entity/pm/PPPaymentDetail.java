@@ -3,6 +3,7 @@ package it.gov.pagopa.bizpmingestion.entity.pm;
 import jakarta.persistence.*;
 import lombok.*;
 
+
 @Entity
 @Table(name = "PP_PAYMENT_DETAIL")
 @Builder
@@ -17,7 +18,7 @@ public class PPPaymentDetail {
     private Long id;
 
     @Column(name = "PAYMENT_ID", nullable = false)
-    private String paymentId;
+    private Long paymentId;
     @Column(name = "IUV", nullable = false)
     private String iuv;
 
@@ -33,7 +34,7 @@ public class PPPaymentDetail {
     private Long importo;
 
 
-    @ManyToOne(targetEntity = PPPayment.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = PPPayment.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "PAYMENT_ID", referencedColumnName = "ID", insertable = false, updatable = false)
     private PPPayment ppPayment;
 }

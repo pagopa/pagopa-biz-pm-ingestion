@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
 @Table(name = "PP_USER")
 @Builder
@@ -29,7 +30,7 @@ public class PPUser {
     private String notificationEmail;
 
     @Builder.Default
-    @OneToMany(targetEntity = PPTransaction.class, fetch = FetchType.EAGER, mappedBy = "ppUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = PPTransaction.class, fetch = FetchType.LAZY, mappedBy = "ppUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PPTransaction> ppTransaction = new ArrayList<>();
 
 }

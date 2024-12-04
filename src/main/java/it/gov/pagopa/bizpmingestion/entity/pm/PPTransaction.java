@@ -5,27 +5,30 @@ import lombok.*;
 
 import java.sql.Timestamp;
 
+
 @NamedEntityGraph(
         name = "transaction-entity-graph",
         attributeNodes = {
                 @NamedAttributeNode("ppUser"),
-//                @NamedAttributeNode("ppPsp"),
-//                @NamedAttributeNode(value = "ppWallet", subgraph = "ppCreditCard-subgraph"),
-                @NamedAttributeNode(value = "ppPayment", subgraph = "ppPaymentDetail-subgraph")
+                @NamedAttributeNode("ppPsp"),
+                @NamedAttributeNode(value = "ppWallet", subgraph = "ppWallet-subgraph"),
+                @NamedAttributeNode(value = "ppPayment", subgraph = "ppPayment-subgraph")
         },
         subgraphs = {
                 @NamedSubgraph(
-                        name = "ppPaymentDetail-subgraph",
+                        name = "ppPayment-subgraph",
                         attributeNodes = {
                                 @NamedAttributeNode("ppPaymentDetail")
                         }
                 ),
-//                @NamedSubgraph(
-//                        name = "ppCreditCard-subgraph",
-//                        attributeNodes = {
-//                                @NamedAttributeNode("ppCreditCard")
-//                        }
-//                )
+                @NamedSubgraph(
+                        name = "ppWallet-subgraph",
+                        attributeNodes = {
+                                @NamedAttributeNode("ppCreditCard"),
+//                                @NamedAttributeNode("ppPsp"),
+//                                @NamedAttributeNode("ppPayPal"),
+                        }
+                )
         }
 )
 @Entity
@@ -61,11 +64,6 @@ public class PPTransaction {
     private Byte accountingStatus;
 
     @Column(name = "FK_USER", nullable = false)
-	/*
-	@JoinColumn(
-			table = "PP_USER",
-			name = "pp_user_id",
-			referencedColumnName = "ID_USER")*/
     private Long fkUser;
     @Column(name = "FK_PAYMENT", nullable = false)
     private Long fkPayment;
@@ -75,21 +73,21 @@ public class PPTransaction {
     private Long fkPsp;
 
 
-    @ManyToOne(targetEntity = PPUser.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = PPUser.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_USER", referencedColumnName = "ID_USER", insertable = false, updatable = false)
     private PPUser ppUser;
 
-    @OneToOne(targetEntity = PPPayment.class, fetch = FetchType.EAGER)
+    @OneToOne(targetEntity = PPPayment.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_PAYMENT", referencedColumnName = "ID", insertable = false, updatable = false)
     private PPPayment ppPayment;
 
-    @OneToOne(targetEntity = PPWallet.class, fetch = FetchType.EAGER)
+    @OneToOne(targetEntity = PPWallet.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_WALLET", referencedColumnName = "ID_WALLET", insertable = false, updatable = false)
     private PPWallet ppWallet;
 
-//    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.EAGER)
-//    @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
-//    private PPPsp ppPsp;
+    @OneToOne(targetEntity = PPPsp.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "FK_PSP", referencedColumnName = "ID", insertable = false, updatable = false)
+    private PPPsp ppPsp;
 
 
 }

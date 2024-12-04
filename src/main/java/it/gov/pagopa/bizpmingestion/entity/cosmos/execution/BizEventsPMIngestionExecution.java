@@ -23,6 +23,8 @@ import lombok.Setter;
 @Setter
 public class BizEventsPMIngestionExecution {
     private String id;
+    private String requestId;
+    private Integer sliceNumber;
     private String dateFrom;
     private String dateTo;
     private PMExtractionType extractionType;

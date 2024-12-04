@@ -3,6 +3,7 @@ package it.gov.pagopa.bizpmingestion.service;
 import it.gov.pagopa.bizpmingestion.enumeration.PMExtractionType;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import it.gov.pagopa.bizpmingestion.model.ExtractionResponse;
 import org.springframework.http.ResponseEntity;

@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
 @Table(name = "PP_PAYMENT")
 @Builder
@@ -38,7 +39,7 @@ public class PPPayment {
     private Long creditCardVerification;
 
     @Builder.Default
-    @OneToMany(targetEntity = PPPaymentDetail.class, fetch = FetchType.EAGER, mappedBy = "ppPayment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = PPPaymentDetail.class, fetch = FetchType.LAZY, mappedBy = "ppPayment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PPPaymentDetail> ppPaymentDetail = new ArrayList<>();
 
 }
