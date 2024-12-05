@@ -22,7 +22,7 @@ public class MapperComponent {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
     String stringCreationDate =
-        ppTransaction.getCreationDate().toInstant().atZone(ZoneId.of("Europe/Rome")).format(formatter);
+        ppTransaction.getCreationDate().toInstant().atZone(ZoneOffset.UTC).format(formatter);
 
     PPPsp psp = ppTransaction.getPpPsp();
 
