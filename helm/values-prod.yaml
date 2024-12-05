@@ -88,8 +88,8 @@ microservice-chart:
     OTEL_LOGS_EXPORTER: none
     OTEL_TRACES_SAMPLER: "always_on"
     JAVA_TOOL_OPTIONS: '-Xms768m -Xmx3072m'
-    THREADS_NUMBER: 10
-    SLICES_NUMBER: 20
+    THREADS_NUMBER: '10'
+    SLICES_NUMBER: '20'
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-p-connection-string'

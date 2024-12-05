@@ -66,7 +66,7 @@ public class PMExtractionService implements IPMExtractionService {
 
       Specification<PPTransaction> spec =
           new TransactionSpecifications()
-              .getFilteredTransactions(dateFromSlice, dateToSlice);
+              .getFilteredTransactions(dateFromSlice, dateToSlice, taxCodes);
 
       int finalI = i;
       var future =

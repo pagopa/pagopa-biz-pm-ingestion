@@ -3,19 +3,18 @@ package it.gov.pagopa.bizpmingestion.specification;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPPayment;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPPaymentDetail;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.criteria.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.CollectionUtils;
 
 public class TransactionSpecifications {
 
   public Specification<PPTransaction> getFilteredTransactions(
-      LocalDateTime startDate, LocalDateTime endDate) {
-    return Specification.where(TransactionSpecifications.distinct())
+      LocalDateTime startDate, LocalDateTime endDate, List<String> taxCodes) {
+    return Specification.where(TransactionSpecifications.distinct(taxCodes))
         .and(TransactionSpecifications.byStatus(List.of("3", "8", "9", "14", "21")))
         .and(TransactionSpecifications.byAccountingStatus(List.of("1", "5")))
         .and(TransactionSpecifications.byCreationDateBetween(startDate, endDate))
@@ -23,7 +22,7 @@ public class TransactionSpecifications {
         .and(TransactionSpecifications.byCreditCardVerification(false));
   }
 
-  public static Specification<PPTransaction> distinct() {
+  public static Specification<PPTransaction> distinct(List<String> taxCodes) {
     return (root, query, criteriaBuilder) -> {
       query.distinct(true); // Imposta la query come distinta
 
@@ -40,6 +39,10 @@ public class TransactionSpecifications {
       Join<?, ?> ppPspJoin2 = ppWalletJoin.join("ppPsp", JoinType.LEFT);
 
       Join<?, ?> ppPaymentDetailJoin = ppPaymentJoin.join("ppPaymentDetail", JoinType.LEFT);
+
+      if (!CollectionUtils.isEmpty(taxCodes)) {
+        return ppUserJoin.get("fiscalCode").in(taxCodes);
+      }
 
       return criteriaBuilder
           .conjunction(); // Restituisce una condizione vera, per non influire sulla query
