@@ -24,6 +24,8 @@ public class Application {
 
   @PostConstruct
   public void setParallelism() {
-    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", threadsNumber);
+    int n = Integer.parseInt(threadsNumber);
+    String nThreads = String.valueOf(n);
+    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", nThreads);
   }
 }
