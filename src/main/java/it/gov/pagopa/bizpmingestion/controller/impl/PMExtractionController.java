@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 @Controller
 @Slf4j
 public class PMExtractionController implements IPMExtractionController {
-    private static final String LOG_BASE_HEADER_INFO = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
 
     private final IPMExtractionService pmExtractionService;
 
@@ -26,7 +25,6 @@ public class PMExtractionController implements IPMExtractionController {
     @Override
     public ResponseEntity<ExtractionResponse> pmDataExtraction(PMExtractionType pmExtractionType,
                                                                DataExtractionOptionsModel dataExtractionOptionsModel) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "pmDataExtraction", CommonUtility.sanitize(pmExtractionType.toString()) + "; " + CommonUtility.sanitize(dataExtractionOptionsModel.toString())));
         var body = pmExtractionService.pmDataExtraction(dataExtractionOptionsModel.getCreationDateFrom(), dataExtractionOptionsModel.getCreationDateTo(), dataExtractionOptionsModel.getTaxCodes(), pmExtractionType);
         return ResponseEntity.ok(body);
     }

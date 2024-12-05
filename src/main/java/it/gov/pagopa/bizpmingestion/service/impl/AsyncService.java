@@ -10,7 +10,6 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -74,25 +73,20 @@ public class AsyncService {
     } catch (Exception e) {
       pmIngestionExec.setStatus("FAILED");
       log.error(
-          String.format(
-              LOG_BASE_HEADER_INFO,
-              "processDataAsync",
-              "[processId="
-                  + pmIngestionExec.getId()
-                  + "] - Error during asynchronous processing: "
-                  + e.getMessage()));
-    } finally {
-          pmIngestionExec.setEndTime(
-              DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT)
-                  .format(LocalDateTime.now()));
+          "Error during asynchronous processing. [transactionId={}] ", pmIngestionExec.getId(), e);
 
-          pmIngestionExecutionRepository.save(pmIngestionExec);
-          log.info(
-              "Done {}/{} records - Slice n° {} ",
-              pmIngestionExec.getNumRecordIngested(),
-              pmIngestionExec.getNumRecordFound(),
-              sliceNumber);
-        }
+    } finally {
+      pmIngestionExec.setEndTime(
+          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT)
+              .format(LocalDateTime.now()));
+
+      pmIngestionExecutionRepository.save(pmIngestionExec);
+      log.info(
+          "Done {}/{} records - Slice n° {} ",
+          pmIngestionExec.getNumRecordIngested(),
+          pmIngestionExec.getNumRecordFound(),
+          sliceNumber);
+    }
     return pmIngestionExec;
   }
 
@@ -149,35 +143,21 @@ public class AsyncService {
     var user = wrappers.stream().map(WrapperObject::getUserViewList).flatMap(List::stream).toList();
     //    var skipped = wrappers.stream().map(WrapperObject::getSkippedTransaction).toList();
 
-
     ExecutorService executor = Executors.newFixedThreadPool(3);
 
     var f1 =
         CompletableFuture.runAsync(
-                () -> bulkSave(generals, bizEventsViewGeneralRepository, "generals", sliceNumber),
-                executor)
-            .exceptionally(
-                (ex) -> {
-                  throw new RuntimeException(ex);
-                });
+            () -> bulkSave(generals, bizEventsViewGeneralRepository, "generals", sliceNumber),
+            executor);
     var f2 =
         CompletableFuture.runAsync(
-                () -> bulkSave(cart, bizEventsViewCartRepository, "cart", sliceNumber), executor)
-            .exceptionally(
-                (ex) -> {
-                  throw new RuntimeException(ex);
-                });
+            () -> bulkSave(cart, bizEventsViewCartRepository, "cart", sliceNumber), executor);
 
     var f3 =
         CompletableFuture.runAsync(
-                () -> bulkSave(user, bizEventsViewUserRepository, "user", sliceNumber), executor)
-            .exceptionally(
-                (ex) -> {
-                  throw new RuntimeException(ex);
-                });
+            () -> bulkSave(user, bizEventsViewUserRepository, "user", sliceNumber), executor);
 
-    CompletableFuture.allOf(f1, f2, f3).exceptionally((ex) -> {throw new RuntimeException(ex);})
-        .join();
+    CompletableFuture.allOf(f1, f2, f3).join();
 
     executor.shutdown();
     pmIngestionExec.setNumRecordIngested(wrappers.size());
@@ -199,8 +179,7 @@ public class AsyncService {
       int endIndex = Math.min(i + bulkSize, generals.size());
       List<T> bulk = generals.subList(i, endIndex);
       repository.saveAll(bulk);
-      //      log.info("saveBulk {} {}/{} - Slice n° {}", document, endIndex, generals.size(),
-      // sliceNumber);
+      //      log.info("saveBulk {} {}/{} - Slice n° {}", document, endIndex, generals.size(), sliceNumber);
     }
   }
 

@@ -15,7 +15,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,12 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PMExtractionService implements IPMExtractionService {
 
+  @Value(value = "${threads.number}")
+  private String threadsNumber;
 
-    @Value(value = "${threads.number}")
-    private String threadsNumber;
-
-    @Value(value = "${slices.number}")
-    private String slicesNumber;
+  @Value(value = "${slices.number}")
+  private String slicesNumber;
 
   @Autowired private AsyncService asyncService;
 
@@ -42,13 +40,32 @@ public class PMExtractionService implements IPMExtractionService {
   @Transactional
   public ExtractionResponse pmDataExtraction(
       String dateFrom, String dateTo, List<String> taxCodes, PMExtractionType pmExtractionType) {
+    log.info("Start PMIngestion from {} to {}", dateFrom, dateTo);
+
+    ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(threadsNumber));
+
+        computeDay(LocalDate.parse(dateFrom), LocalDate.parse(dateTo), taxCodes, executor);
+
+//    LocalDate startDate = LocalDate.parse(dateFrom);
+//
+//    LocalDate dayTo = LocalDate.parse(dateTo);
+//
+//    while (dayTo.isAfter(startDate)) {
+//      LocalDate dayFrom = dayTo.minusDays(1);
+//      computeDay(dayFrom, dayTo, taxCodes, executor);
+//      dayTo = dayFrom;
+//    }
+
+    return ExtractionResponse.builder().build();
+  }
+
+  private void computeDay(
+      LocalDate dateFrom, LocalDate dateTo, List<String> taxCodes, ExecutorService executor) {
     long startTime = System.currentTimeMillis();
 
-    List<LocalDateTime> fractions = generateDateSlices(dateFrom, dateTo, Integer.parseInt(slicesNumber));
+    List<LocalDateTime> fractions =
+        generateDateSlices(dateFrom, dateTo, Integer.parseInt(slicesNumber));
     List<CompletableFuture<BizEventsPMIngestionExecution>> futures = new ArrayList<>();
-
-      ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(threadsNumber));
-
     for (int i = 0; i < fractions.size() - 1; i++) {
       LocalDateTime dateFromSlice = fractions.get(i);
       LocalDateTime dateToSlice = fractions.get(i + 1);
@@ -80,43 +97,53 @@ public class PMExtractionService implements IPMExtractionService {
     CompletableFuture<Void> allDone =
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
-    allDone.thenAccept(
-        (v) -> {
-          List<BizEventsPMIngestionExecution> slices = futures.stream()
-                  .map(CompletableFuture::join)
-                  .toList();
+    allDone
+        .thenAccept(
+            (v) -> {
+              List<BizEventsPMIngestionExecution> slices =
+                  futures.stream().map(CompletableFuture::join).toList();
 
-          long endTime = System.currentTimeMillis();
-          long totalTimeMillis = (endTime - startTime);
+              long endTime = System.currentTimeMillis();
+              long totalTimeMillis = (endTime - startTime);
 
-          long hours = totalTimeMillis / 3600000; // Ore intere
-          long remainingMillisAfterHours = totalTimeMillis % 3600000; // Millisecondi rimanenti dopo aver calcolato le ore
+              long hours = totalTimeMillis / 3600000; // Ore intere
+              long remainingMillisAfterHours =
+                  totalTimeMillis % 3600000; // Millisecondi rimanenti dopo aver calcolato le ore
 
-          long minutes = remainingMillisAfterHours / 60000; // Minuti interi
-          long remainingMillisAfterMinutes = remainingMillisAfterHours % 60000; // Millisecondi rimanenti dopo aver calcolato i minuti
+              long minutes = remainingMillisAfterHours / 60000; // Minuti interi
+              long remainingMillisAfterMinutes =
+                  remainingMillisAfterHours
+                      % 60000; // Millisecondi rimanenti dopo aver calcolato i minuti
 
-          long seconds = remainingMillisAfterMinutes / 1000; // Secondi interi
+              long seconds = remainingMillisAfterMinutes / 1000; // Secondi interi
 
-          log.info(
-              "Completed all of {} slices after {} h {} m {} s - ingested {}/{} records ", slicesNumber, hours, minutes , seconds,
+              log.info(
+                  "Completed PMIngestion from {} to {} all of {} slices after {} h {} m {} s - ingested {}/{} records ",
+                  dateFrom,
+                  dateTo,
+                  slicesNumber,
+                  hours,
+                  minutes,
+                  seconds,
                   slices.stream()
-                          .map(BizEventsPMIngestionExecution::getNumRecordIngested)
-                          .reduce(Integer::sum)
-                          .orElse(-1),
+                      .map(BizEventsPMIngestionExecution::getNumRecordIngested)
+                      .reduce(Integer::sum)
+                      .orElse(-1),
                   slices.stream()
-                          .map(BizEventsPMIngestionExecution::getNumRecordFound)
-                          .reduce(Integer::sum)
-                          .orElse(-1)
-          );
-        }).thenRun(executor::shutdown);
-
-    return ExtractionResponse.builder().build();
+                      .map(BizEventsPMIngestionExecution::getNumRecordFound)
+                      .reduce(Integer::sum)
+                      .orElse(-1));
+            })
+        .thenRun(executor::shutdown)
+        .exceptionally(
+            (ex) -> {
+              log.error("Error PMIngestion from {} to {}", dateFrom, dateTo, ex);
+              return null;
+            });
   }
 
-  public static List<LocalDateTime> generateDateSlices(String dateFrom, String dateTo, int n) {
-    // Convertire le stringhe in LocalDate
-    LocalDate startDate = LocalDate.parse(dateFrom);
-    LocalDate endDate = LocalDate.parse(dateTo);
+  public static List<LocalDateTime> generateDateSlices(
+      LocalDate startDate, LocalDate endDate, int n) {
 
     // Verifica che il numero di partizioni sia valido
     if (n <= 0) {
