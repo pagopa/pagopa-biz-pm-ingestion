@@ -5,6 +5,8 @@ import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPayPal;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
+
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ public class MapperComponent {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
     String stringCreationDate =
-        ppTransaction.getCreationDate().toInstant().atZone(ZoneOffset.UTC).format(formatter);
+        ppTransaction.getCreationDate().toInstant().atZone(ZoneId.of("Europe/Rome")).format(formatter);
 
     PPPsp psp = ppTransaction.getPpPsp();
 
