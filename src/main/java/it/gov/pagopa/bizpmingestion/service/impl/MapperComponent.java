@@ -1,5 +1,6 @@
 package it.gov.pagopa.bizpmingestion.service.impl;
 
+import com.microsoft.azure.functions.annotation.ExponentialBackoffRetry;
 import it.gov.pagopa.bizpmingestion.entity.pm.*;
 import it.gov.pagopa.bizpmingestion.enumeration.PaymentMethodType;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
@@ -18,6 +19,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class MapperComponent {
 
+  @ExponentialBackoffRetry(
+          maxRetryCount = 3,
+          maximumInterval = "00:00:30",
+          minimumInterval = "00:00:05")
   public PMEvent convert(PPTransaction ppTransaction) {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");

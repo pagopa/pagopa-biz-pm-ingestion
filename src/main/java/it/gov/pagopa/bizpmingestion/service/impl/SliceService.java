@@ -3,7 +3,6 @@ package it.gov.pagopa.bizpmingestion.service.impl;
 import com.azure.spring.data.cosmos.repository.CosmosRepository;
 import com.microsoft.azure.functions.annotation.ExponentialBackoffRetry;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.BizEventsPMIngestionExecution;
-import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.SkippedTransaction;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import it.gov.pagopa.bizpmingestion.model.WrapperObject;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
@@ -11,7 +10,6 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -64,7 +62,7 @@ public class SliceService {
       int sliceNumber) {
     try {
       pmIngestionExec.setId(UUID.randomUUID().toString());
-      List<PPTransaction> ppTrList = ppTransactionRepository.findAll(spec);
+      List<PPTransaction> ppTrList = getPpTransactions(spec);
 
       List<PMEvent> pmEventList =
           ppTrList.stream().map(elem -> mapperComponent.convert(elem)).toList();
@@ -90,9 +88,17 @@ public class SliceService {
           pmIngestionExec.getStatus(),
           pmIngestionExec.getNumRecordIngested(),
           pmIngestionExec.getNumRecordFound(),
-          LocalDate.parse(pmIngestionExec.getDateFrom()));
+          LocalDateTime.parse(pmIngestionExec.getDateFrom()).toLocalDate());
     }
     return pmIngestionExec;
+  }
+
+  @ExponentialBackoffRetry(
+      maxRetryCount = 3,
+      maximumInterval = "00:00:30",
+      minimumInterval = "00:00:05")
+  private List<PPTransaction> getPpTransactions(Specification<PPTransaction> spec) {
+    return ppTransactionRepository.findAll(spec);
   }
 
   private void handleEventList(
@@ -171,13 +177,13 @@ public class SliceService {
   @ExponentialBackoffRetry(
       maxRetryCount = 3,
       maximumInterval = "00:00:30",
-      minimumInterval = "00:00:5")
+      minimumInterval = "00:00:05")
   private <T> void bulkSave(List<T> generals, CosmosRepository<T, String> repository) {
-    int bulkSize = 500;
-    for (int i = 0; i < generals.size(); i += bulkSize) {
-      int endIndex = Math.min(i + bulkSize, generals.size());
-      List<T> bulk = generals.subList(i, endIndex);
-      repository.saveAll(bulk);
-    }
+        int bulkSize = 500;
+        for (int i = 0; i < generals.size(); i += bulkSize) {
+          int endIndex = Math.min(i + bulkSize, generals.size());
+          List<T> bulk = generals.subList(i, endIndex);
+          repository.saveAll(bulk);
+        }
   }
 }
