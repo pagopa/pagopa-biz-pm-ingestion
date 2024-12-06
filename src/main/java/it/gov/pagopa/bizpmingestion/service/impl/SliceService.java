@@ -3,6 +3,7 @@ package it.gov.pagopa.bizpmingestion.service.impl;
 import com.azure.spring.data.cosmos.repository.CosmosRepository;
 import com.microsoft.azure.functions.annotation.ExponentialBackoffRetry;
 import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.BizEventsPMIngestionExecution;
+import it.gov.pagopa.bizpmingestion.entity.cosmos.execution.SkippedTransaction;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import it.gov.pagopa.bizpmingestion.model.WrapperObject;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEvent;
@@ -10,6 +11,7 @@ import it.gov.pagopa.bizpmingestion.model.pm.PMEventPaymentDetail;
 import it.gov.pagopa.bizpmingestion.model.pm.PMEventToViewResult;
 import it.gov.pagopa.bizpmingestion.repository.*;
 import it.gov.pagopa.bizpmingestion.service.IPMEventToViewService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -26,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @EnableAsync
 @Service
 @Slf4j
-public class AsyncService {
+public class SliceService {
 
   private static final String LOG_BASE_HEADER_INFO = "[ClassMethod: %s] - [MethodParamsToLog: %s]";
   public static final int PAGE_SIZE = 1000;
@@ -42,7 +44,7 @@ public class AsyncService {
   @Autowired private PPTransactionRepository ppTransactionRepository;
 
   @Autowired
-  public AsyncService(
+  public SliceService(
       BizEventsViewGeneralRepository bizEventsViewGeneralRepository,
       BizEventsViewCartRepository bizEventsViewCartRepository,
       BizEventsViewUserRepository bizEventsViewUserRepository,
@@ -55,9 +57,8 @@ public class AsyncService {
     this.pmEventToViewService = pmEventToViewService;
   }
 
-  //    @Async
   @Transactional
-  public BizEventsPMIngestionExecution processDataAsync(
+  public BizEventsPMIngestionExecution computeSlice(
       Specification<PPTransaction> spec,
       BizEventsPMIngestionExecution pmIngestionExec,
       int sliceNumber) {
@@ -80,19 +81,23 @@ public class AsyncService {
           DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT)
               .format(LocalDateTime.now()));
 
-      pmIngestionExecutionRepository.save(pmIngestionExec);
+      //      pmIngestionExecutionRepository.save(pmIngestionExec);
       log.info(
-          "Done {}/{} records - Slice n° {} ",
+          "PMIngestion Slice n° {} [{} to {}] Done with status {} - {}/{} records [Day {}]",
+          sliceNumber,
+          pmIngestionExec.getDateFrom(),
+          pmIngestionExec.getDateTo(),
+          pmIngestionExec.getStatus(),
           pmIngestionExec.getNumRecordIngested(),
           pmIngestionExec.getNumRecordFound(),
-          sliceNumber);
+          LocalDate.parse(pmIngestionExec.getDateFrom()));
     }
     return pmIngestionExec;
   }
 
   private void handleEventList(
       List<PMEvent> pmEventList, BizEventsPMIngestionExecution pmIngestionExec, int sliceNumber) {
-    pmIngestionExec.setStatus("DONE");
+    pmIngestionExec.setStatus("ALL_COMPLETED");
     pmIngestionExec.setSliceNumber(sliceNumber);
     pmIngestionExec.setNumRecordIngested(0);
     pmIngestionExec.setNumRecordFound(pmEventList.size());
@@ -130,8 +135,7 @@ public class AsyncService {
                               + pmEvent.getPkTransactionId());
                     }
                   } catch (Exception e) {
-                    pmIngestionExec.setStatus("DONE WITH SKIP");
-
+                    pmIngestionExec.setStatus("COMPLETED");
                     return null;
                   }
                 })
@@ -147,21 +151,20 @@ public class AsyncService {
 
     var f1 =
         CompletableFuture.runAsync(
-            () -> bulkSave(generals, bizEventsViewGeneralRepository, "generals", sliceNumber),
-            executor);
+            () -> bulkSave(generals, bizEventsViewGeneralRepository), executor);
     var f2 =
-        CompletableFuture.runAsync(
-            () -> bulkSave(cart, bizEventsViewCartRepository, "cart", sliceNumber), executor);
+        CompletableFuture.runAsync(() -> bulkSave(cart, bizEventsViewCartRepository), executor);
 
     var f3 =
-        CompletableFuture.runAsync(
-            () -> bulkSave(user, bizEventsViewUserRepository, "user", sliceNumber), executor);
+        CompletableFuture.runAsync(() -> bulkSave(user, bizEventsViewUserRepository), executor);
 
-    CompletableFuture.allOf(f1, f2, f3).join();
+    try {
+      CompletableFuture.allOf(f1, f2, f3).join();
+    } finally {
+      executor.shutdown();
+    }
 
-    executor.shutdown();
     pmIngestionExec.setNumRecordIngested(wrappers.size());
-
     //    pmIngestionExec.setSkippedID(skipped);
   }
 
@@ -169,28 +172,12 @@ public class AsyncService {
       maxRetryCount = 3,
       maximumInterval = "00:00:30",
       minimumInterval = "00:00:5")
-  private <T> void bulkSave(
-      List<T> generals,
-      CosmosRepository<T, String> repository,
-      String document,
-      Integer sliceNumber) {
+  private <T> void bulkSave(List<T> generals, CosmosRepository<T, String> repository) {
     int bulkSize = 500;
     for (int i = 0; i < generals.size(); i += bulkSize) {
       int endIndex = Math.min(i + bulkSize, generals.size());
       List<T> bulk = generals.subList(i, endIndex);
       repository.saveAll(bulk);
-      //      log.info("saveBulk {} {}/{} - Slice n° {}", document, endIndex, generals.size(), sliceNumber);
     }
   }
-
-  //  @ExponentialBackoffRetry(
-  //      maxRetryCount = 3,
-  //      maximumInterval = "00:00:30",
-  //      minimumInterval = "00:00:10")
-  //  private void saveOnCosmos(PMEventToViewResult result) {
-  //    bizEventsViewGeneralRepository.save(result.getGeneralView());
-  //    bizEventsViewCartRepository.save(result.getCartView());
-  //    bizEventsViewUserRepository.saveAll(result.getUserViewList());
-  //  }
-
 }

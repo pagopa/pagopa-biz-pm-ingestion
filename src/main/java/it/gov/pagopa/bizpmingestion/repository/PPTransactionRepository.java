@@ -17,4 +17,6 @@ public interface PPTransactionRepository extends JpaRepository<PPTransaction, Lo
 
   @EntityGraph(value = "transaction-entity-graph")
   Page<PPTransaction> findAll(Specification<PPTransaction> spec, Pageable pageable);
+
+  long count(Specification<PPTransaction> spec);
 }

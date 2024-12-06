@@ -22,6 +22,15 @@ public class TransactionSpecifications {
         .and(TransactionSpecifications.byCreditCardVerification(false));
   }
 
+  public static Specification<PPTransaction> countTransactions(
+          LocalDateTime startDate, LocalDateTime endDate) {
+    return Specification
+        .where(TransactionSpecifications.byStatus(List.of("3", "8", "9", "14", "21")))
+        .and(TransactionSpecifications.byAccountingStatus(List.of("1", "5")))
+        .and(TransactionSpecifications.byCreationDateBetween(startDate, endDate))
+        .and(TransactionSpecifications.byCreditCardVerification(false));
+  }
+
   public static Specification<PPTransaction> distinct(List<String> taxCodes) {
     return (root, query, criteriaBuilder) -> {
       query.distinct(true); // Imposta la query come distinta
