@@ -4,8 +4,8 @@ import it.gov.pagopa.bizpmingestion.entity.pm.PPPayment;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPPaymentDetail;
 import it.gov.pagopa.bizpmingestion.entity.pm.PPTransaction;
 import jakarta.persistence.criteria.*;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
@@ -14,7 +14,8 @@ public class TransactionSpecifications {
 
   public Specification<PPTransaction> getFilteredTransactions(
       LocalDateTime startDate, LocalDateTime endDate, List<String> taxCodes) {
-    return Specification.where(TransactionSpecifications.distinct(taxCodes))
+    return Specification.where(TransactionSpecifications.distinct())
+        .and(TransactionSpecifications.join(taxCodes))
         .and(TransactionSpecifications.byStatus(List.of("3", "8", "9", "14", "21")))
         .and(TransactionSpecifications.byAccountingStatus(List.of("1", "5")))
         .and(TransactionSpecifications.byCreationDateBetween(startDate, endDate))
@@ -23,18 +24,26 @@ public class TransactionSpecifications {
   }
 
   public static Specification<PPTransaction> countTransactions(
-          LocalDateTime startDate, LocalDateTime endDate) {
-    return Specification
-        .where(TransactionSpecifications.byStatus(List.of("3", "8", "9", "14", "21")))
+      LocalDateTime startDate, LocalDateTime endDate) {
+    return Specification.where(TransactionSpecifications.distinct())
+            .and(TransactionSpecifications.join(new ArrayList<>()))
+            .and(TransactionSpecifications.byStatus(List.of("3", "8", "9", "14", "21")))
         .and(TransactionSpecifications.byAccountingStatus(List.of("1", "5")))
         .and(TransactionSpecifications.byCreationDateBetween(startDate, endDate))
         .and(TransactionSpecifications.byCreditCardVerification(false));
   }
 
-  public static Specification<PPTransaction> distinct(List<String> taxCodes) {
+  public static Specification<PPTransaction> distinct() {
     return (root, query, criteriaBuilder) -> {
       query.distinct(true); // Imposta la query come distinta
 
+      return criteriaBuilder
+          .conjunction(); // Restituisce una condizione vera, per non influire sulla query
+    };
+  }
+
+  public static Specification<PPTransaction> join(List<String> taxCodes) {
+    return (root, query, criteriaBuilder) -> {
       Join<?, ?> ppUserJoin = root.join("ppUser", JoinType.INNER);
 
       Join<?, ?> ppPaymentJoin = root.join("ppPayment", JoinType.INNER);

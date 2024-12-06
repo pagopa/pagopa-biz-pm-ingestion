@@ -25,7 +25,7 @@ import java.sql.Timestamp;
                         name = "ppWallet-subgraph",
                         attributeNodes = {
                                 @NamedAttributeNode("ppCreditCard"),
-                                @NamedAttributeNode("ppPsp"),
+//                                @NamedAttributeNode("ppPsp"),
 //                                @NamedAttributeNode("ppPayPal"),
                         }
                 )

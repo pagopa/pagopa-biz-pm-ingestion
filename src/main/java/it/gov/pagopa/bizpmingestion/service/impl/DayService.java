@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,20 +21,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
-@EnableAsync
 @Service
 @Slf4j
 public class DayService {
+
+  @Autowired private SliceService sliceService;
 
   @Value(value = "${threads.number}")
   private String threadsNumber;
 
   @Autowired private PPTransactionRepository ppTransactionRepository;
-
-  @Autowired private SliceService sliceService;
 
   @Async
   public void computeMultipleDays(String dateFrom, String dateTo, List<String> taxCodes) {
@@ -41,19 +42,23 @@ public class DayService {
 
     while (dayTo.isAfter(startDate)) {
       LocalDate dayFrom = dayTo.minusDays(1);
-      computeDay(dayFrom, dayTo, taxCodes);
+      computeDay(dayFrom, dayTo, taxCodes).join();
       dayTo = dayFrom;
     }
   }
 
-  public void computeDay(LocalDate dateFrom, LocalDate dateTo, List<String> taxCodes) {
+  public CompletableFuture<Void> computeDay(
+      LocalDate dateFrom, LocalDate dateTo, List<String> taxCodes) {
     long startTime = System.currentTimeMillis();
 
     ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(threadsNumber));
 
     int slicesNumber = getSlicesNumber(dateFrom, dateTo);
 
-    log.info("PMIngestion Computing of the day with {} slices [Day {}]", slicesNumber, dateFrom);
+    log.info(
+        "PMIngestion Start analyzing one day with {} records [Day {}]",
+        slicesNumber * 25000,
+        dateFrom);
 
     List<LocalDateTime> fractions = generateDateSlices(dateFrom, dateTo, slicesNumber);
 
@@ -89,7 +94,7 @@ public class DayService {
     CompletableFuture<Void> allDone =
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
-    allDone
+    return allDone
         .thenAccept(
             (v) -> {
               List<BizEventsPMIngestionExecution> slices =
@@ -131,18 +136,18 @@ public class DayService {
               executor.shutdown();
               log.error("Error PMIngestion [Day {}]", dateFrom, ex);
               return null;
-            })
-        .join();
+            });
   }
 
   private int getSlicesNumber(LocalDate dateFrom, LocalDate dateTo) {
     long count =
-        ppTransactionRepository.count(TransactionSpecifications.countTransactions(
-                        dateFrom.atStartOfDay(), dateTo.atStartOfDay()));
+        ppTransactionRepository.count(
+            TransactionSpecifications.countTransactions(
+                dateFrom.atStartOfDay(), dateTo.atStartOfDay()));
 
-    int slicesNumber = Math.toIntExact(count / (2 * 2500));
-    slicesNumber = Math.max(10, slicesNumber);
-    slicesNumber = Math.min(slicesNumber, 50);
+    int slicesNumber = Math.toIntExact(count / (2500));
+    slicesNumber = Math.max(1, slicesNumber);
+    //    slicesNumber = Math.min(slicesNumber, 50);
     return slicesNumber;
   }
 
