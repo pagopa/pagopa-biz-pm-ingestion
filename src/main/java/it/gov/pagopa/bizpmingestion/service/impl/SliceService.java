@@ -56,6 +56,10 @@ public class SliceService {
   }
 
   @Transactional
+  @ExponentialBackoffRetry(
+          maxRetryCount = 3,
+          maximumInterval = "00:03:00",
+          minimumInterval = "00:00:05")
   public BizEventsPMIngestionExecution computeSlice(
       Specification<PPTransaction> spec,
       BizEventsPMIngestionExecution pmIngestionExec,
