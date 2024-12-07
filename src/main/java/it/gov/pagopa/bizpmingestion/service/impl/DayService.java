@@ -42,23 +42,45 @@ public class DayService {
 
     while (dayTo.isAfter(startDate)) {
       LocalDate dayFrom = dayTo.minusDays(1);
-      computeDay(dayFrom, dayTo, taxCodes).join();
+      computeDay(dayFrom, dayTo, taxCodes);
       dayTo = dayFrom;
     }
   }
 
-  public CompletableFuture<Void> computeDay(
-      LocalDate dateFrom, LocalDate dateTo, List<String> taxCodes) {
+  public void computeDay(LocalDate dateFrom, LocalDate dateTo, List<String> taxCodes) {
+    long count =
+        ppTransactionRepository.count(
+            TransactionSpecifications.countTransactions(
+                dateFrom.atStartOfDay(), dateTo.atStartOfDay()));
+    int sliceNumber = getSlicesNumber(count);
+
+    if (count > 80_000) {
+      LocalDateTime middleHour = dateFrom.atStartOfDay().plusHours(12);
+      computeTranche(dateFrom.atStartOfDay(), middleHour, taxCodes, sliceNumber, count, 1).join();
+      computeTranche(middleHour, dateTo.atStartOfDay(), taxCodes, sliceNumber, count, 2).join();
+    } else {
+      computeTranche(
+              dateFrom.atStartOfDay(), dateTo.atStartOfDay(), taxCodes, sliceNumber, count, 0)
+          .join();
+    }
+  }
+
+  public CompletableFuture<Void> computeTranche(
+      LocalDateTime dateFrom,
+      LocalDateTime dateTo,
+      List<String> taxCodes,
+      int slicesNumber,
+      long count,
+      int tranche) {
     long startTime = System.currentTimeMillis();
 
     ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(threadsNumber));
 
-    int slicesNumber = getSlicesNumber(dateFrom, dateTo);
-
     log.info(
-        "PMIngestion Start analyzing one day with {} records [Day {}]",
-        slicesNumber * 25000,
-        dateFrom);
+        "PMIngestion Start analyzing one day with {} records [Day {}] [part. {}]",
+        count,
+        dateFrom,
+        tranche);
 
     List<LocalDateTime> fractions = generateDateSlices(dateFrom, dateTo, slicesNumber);
 
@@ -115,7 +137,7 @@ public class DayService {
               long seconds = remainingMillisAfterMinutes / 1000; // Secondi interi
 
               log.info(
-                  "Completed PMIngestion all of the {} slices after {} h {} m {} s - ingested {}/{} records [Day {}]",
+                  "Completed PMIngestion all of the {} slices after {} h {} m {} s - ingested {}/{} records [Day {}] [part. {}]",
                   slicesNumber,
                   hours,
                   minutes,
@@ -128,31 +150,27 @@ public class DayService {
                       .map(BizEventsPMIngestionExecution::getNumRecordFound)
                       .reduce(Integer::sum)
                       .orElse(-1),
-                  dateFrom);
+                  dateFrom,
+                  tranche);
             })
         .thenRun(executor::shutdown)
         .exceptionally(
             (ex) -> {
               executor.shutdown();
-              log.error("Error PMIngestion [Day {}]", dateFrom, ex);
+              log.error("Error PMIngestion with {} records [Day {}] [part. {}]", count, dateFrom, tranche, ex);
               return null;
             });
   }
 
-  private int getSlicesNumber(LocalDate dateFrom, LocalDate dateTo) {
-    long count =
-        ppTransactionRepository.count(
-            TransactionSpecifications.countTransactions(
-                dateFrom.atStartOfDay(), dateTo.atStartOfDay()));
-
+  private int getSlicesNumber(long count) {
     int slicesNumber = Math.toIntExact(count / (2500));
     slicesNumber = Math.max(1, slicesNumber);
-    //    slicesNumber = Math.min(slicesNumber, 50);
+    //    slicesNumber = Math.min(slicesNumber, 100);
     return slicesNumber;
   }
 
   public static List<LocalDateTime> generateDateSlices(
-      LocalDate startDate, LocalDate endDate, int n) {
+      LocalDateTime startDate, LocalDateTime endDate, int n) {
 
     // Verifica che il numero di partizioni sia valido
     if (n <= 0) {
@@ -164,9 +182,8 @@ public class DayService {
     }
 
     // Convertire le date a LocalDateTime UTC
-    LocalDateTime startDateTime =
-        startDate.atStartOfDay().atOffset(ZoneOffset.UTC).toLocalDateTime();
-    LocalDateTime endDateTime = endDate.atStartOfDay().atOffset(ZoneOffset.UTC).toLocalDateTime();
+    LocalDateTime startDateTime = startDate.atOffset(ZoneOffset.UTC).toLocalDateTime();
+    LocalDateTime endDateTime = endDate.atOffset(ZoneOffset.UTC).toLocalDateTime();
 
     // Calcolare la durata totale in secondi
     long totalSeconds = ChronoUnit.SECONDS.between(startDateTime, endDateTime);

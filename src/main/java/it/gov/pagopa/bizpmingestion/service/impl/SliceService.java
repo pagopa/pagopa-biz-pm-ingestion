@@ -94,8 +94,8 @@ public class SliceService {
   }
 
   @ExponentialBackoffRetry(
-      maxRetryCount = 3,
-      maximumInterval = "00:00:30",
+      maxRetryCount = 5,
+      maximumInterval = "00:05:00",
       minimumInterval = "00:00:05")
   private List<PPTransaction> getPpTransactions(Specification<PPTransaction> spec) {
     return ppTransactionRepository.findAll(spec);

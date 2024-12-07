@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
 public class MapperComponent {
 
   @ExponentialBackoffRetry(
-          maxRetryCount = 3,
-          maximumInterval = "00:00:30",
+          maxRetryCount = 7,
+          maximumInterval = "00:02:00",
           minimumInterval = "00:00:05")
   public PMEvent convert(PPTransaction ppTransaction) {
 
