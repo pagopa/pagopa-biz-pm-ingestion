@@ -57,9 +57,9 @@ public class SliceService {
 
   @Transactional
   @ExponentialBackoffRetry(
-          maxRetryCount = 3,
-          maximumInterval = "00:03:00",
-          minimumInterval = "00:00:05")
+      maxRetryCount = 3,
+      maximumInterval = "00:03:00",
+      minimumInterval = "00:00:05")
   public BizEventsPMIngestionExecution computeSlice(
       Specification<PPTransaction> spec,
       BizEventsPMIngestionExecution pmIngestionExec,
@@ -183,11 +183,11 @@ public class SliceService {
       maximumInterval = "00:00:30",
       minimumInterval = "00:00:05")
   private <T> void bulkSave(List<T> generals, CosmosRepository<T, String> repository) {
-        int bulkSize = 500;
-        for (int i = 0; i < generals.size(); i += bulkSize) {
-          int endIndex = Math.min(i + bulkSize, generals.size());
-          List<T> bulk = generals.subList(i, endIndex);
-          repository.saveAll(bulk);
-        }
+    int bulkSize = 500;
+    for (int i = 0; i < generals.size(); i += bulkSize) {
+      int endIndex = Math.min(i + bulkSize, generals.size());
+      List<T> bulk = generals.subList(i, endIndex);
+      repository.saveAll(bulk);
+    }
   }
 }
