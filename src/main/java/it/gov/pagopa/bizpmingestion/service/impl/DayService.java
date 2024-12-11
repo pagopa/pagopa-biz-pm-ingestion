@@ -79,7 +79,7 @@ public class DayService {
     log.info(
         "PMIngestion Start analyzing one day with {} records [Day {}] [part. {}]",
         count,
-        dateFrom,
+        dateFrom.toLocalDate(),
         tranche);
 
     List<LocalDateTime> fractions = generateDateSlices(dateFrom, dateTo, slicesNumber);
@@ -150,14 +150,14 @@ public class DayService {
                       .map(BizEventsPMIngestionExecution::getNumRecordFound)
                       .reduce(Integer::sum)
                       .orElse(-1),
-                  dateFrom,
+                  dateFrom.toLocalDate(),
                   tranche);
             })
         .thenRun(executor::shutdown)
         .exceptionally(
             (ex) -> {
               executor.shutdown();
-              log.error("Error PMIngestion with {} records [Day {}] [part. {}]", count, dateFrom, tranche, ex);
+              log.error("Error PMIngestion with {} records [Day {}] [part. {}]", count, dateFrom.toLocalDate(), tranche, ex);
               return null;
             });
   }
