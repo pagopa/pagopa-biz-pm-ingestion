@@ -202,7 +202,7 @@ public class PMEventToViewServiceImpl implements IPMEventToViewService {
                 .transactionId("PM-" + pmEventPaymentDetail.getPkPaymentDetailId().toString() + "-" + ldt.getYear())
                 .taxCode(userDetail.getTaxCode())
                 .transactionDate(pmEvent.getCreationDate())
-                .hidden(isHidden)
+                .hidden(true) // silent ingestion for 2023
                 .isPayer(isPayer)
                 .isDebtor(isDebtor)
                 .build();
